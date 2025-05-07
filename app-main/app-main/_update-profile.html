@@ -1,0 +1,111 @@
+<template>
+    <main>
+        <h1>Update Profile</h1>
+
+        <form class="form" 
+              @submit.prevent="submit">
+
+            <label>Name</label>
+            <input v-model.trim="name"
+                   type="text"
+                   required
+                   maxlength="100" 
+                   ref="name" 
+                   v-focus>
+
+            <label>Photo</label>
+            <input type="file" 
+                   id="file" 
+                   accept="image/*"
+                   @change="change"
+                   ref="file">
+
+            <br>
+            <label for="file">
+                <img class="photo" :src="src">
+            </label>
+
+            <section>
+                <button>Submit</button>
+                <button @click.prevent="reset">Reset</button>
+                <button @click.prevent="$router.push('/')">Cancel</button>
+            </section>
+        </form>
+    </main>
+</template>
+
+<script>
+    app.component({
+        data: () => ({ 
+            name: '',
+            photo: null,            
+        }),
+
+        computed: {
+            src() {
+                // TODO:
+                return this.photo || this.$root.user.photo;
+            },
+        },
+
+        methods: {
+            change(e) {
+                const el = e.target;
+                const f = el.files[0];
+
+                el.setCustomValidity('');
+
+                if (!f) {
+                    this.photo = null;
+                    return;
+                }
+
+                crop(f, 150, 150, 'dataURL', 'image/webp')
+                    .then(url => this.photo = url)
+                    .catch(err => {
+                        this.photo = null;
+                        el.setCustomValidity('Invalid photo.');
+                    });
+            },
+            reset() {
+                // TODO:
+                this.name = this.$root.user.displayName;;
+                this.photo = null;
+                this.$refs.file.value = '';
+                this.$refs.name.focus();
+            },
+            submit() { 
+                this.$root.block();
+
+                // TODO: ----------------------------------
+                
+                const user = this.$root.user;
+
+                user.updateProfile({ displayName: this.name });
+
+                if (this.photo) {
+                    USERS.doc(user.uid).update({ photo: this.photo });
+                    user.photo = this.photo;
+                }
+
+                // ----------------------------------------
+
+                this.$root.unblock();
+                this.$router.push('/');
+            },
+        },
+
+        created() {
+            // TODO:
+            if (!this.$root.user) {
+                this.$router.push('/sign-in');
+                return;
+            }
+
+            // TODO:
+            this.name = this.$root.user.displayName;
+
+            this.$root.title = 'Update Profile';
+        },
+    });
+</script>

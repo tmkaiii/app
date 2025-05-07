@@ -1,0 +1,56 @@
+<template>
+    <main>
+        <h1>Delete Account</h1>
+
+        <form class="form" @submit.prevent="submit">
+            <section>
+                <button>Delete</button>
+                <button @click.prevent="$router.push('/')">Cancel</button>
+            </section>
+        </form>
+    </main>
+</template>
+
+<script>
+    app.component({
+        data: () => ({
+            
+        }),
+
+        methods: {
+            submit() {
+                this.$root.block();
+
+                // TODO: ----------------------------------
+                
+                const user = this.$root.user;
+
+                user.delete()
+                    .then(_ => {
+
+                        USERS.doc(user.uid).delete();
+
+                        this.$root.unblock();
+                        this.$router.push('/');
+
+                    })
+                    .catch(err => {
+                        this.$root.unblock();
+                        handleError(err, this.$refs.email, this.$refs.password);
+                    });
+
+                // ----------------------------------------
+            },
+        },
+
+        created() {
+            // TODO:
+            if (!this.$root.user) {
+                this.$router.push('/sign-in');
+                return;
+            }
+
+            this.$root.title = 'Delete Account';
+        },
+    });
+</script>

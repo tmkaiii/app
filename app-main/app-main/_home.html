@@ -1,0 +1,93 @@
+<style>   
+    .header-image {
+        width: 100%;
+        max-width: 800px;
+        height: auto;
+        border-radius: 15px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        margin-bottom: 25px;
+    }
+    
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .story {
+        background-color: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        margin-bottom: 25px;
+        text-align: left;
+        line-height: 1.6;
+    }
+    
+    .story p {
+        margin-bottom: 15px;
+    }
+
+    .start-button {
+        background-color: #1e88e5;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        padding: 12px 40px;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .start-button:hover {
+        background-color: #1565c0;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+</style>
+
+<template>
+    <main>
+        <div class="container">
+            <h1 class="title">Welcome to Doraemon Hero: Help & Hunt</h1>
+            
+            <img src="image/home.jpg" class="header-image" alt="Doraemon and Friends">
+            
+            <div class="story" style="font-weight: bold;">
+                <p>Oh no! Doraemon's magical gadget pouch has broken, scattering his precious gadgets all across the neighborhood! Without these tools, Doraemon can't help his friends solve their problems.</p>
+                
+                <p>Nobita, Shizuka, Gian, Suneo, and Dorami each face a unique challenge that only one of Doraemon's special gadgets can solve. As Doraemon, you must collect the scattered gadgets and match them to the right friend to save the day!</p>
+            </div>
+            
+            <button class="start-button" @click="startGame">Start Game</button>
+        </div>
+    </main>
+</template>
+
+<script>
+    app.component({
+        data: () => ({
+            
+        }),
+
+        methods: {
+            startGame() {
+                if (this.$root.user) {
+                    // User is already signed in, go directly to game
+                    this.$router.push('/demo13');
+                } else {
+                    // User needs to sign in first
+                    this.$router.push('/sign-in?page=/demo13');
+                }
+            }
+        },
+
+        created() {
+            this.$root.title = 'Home';
+        },
+    });
+</script>
