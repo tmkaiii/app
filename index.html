@@ -3,50 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="image/favicon.png">
+    <link rel="shortcut icon" href="image/doraemon-icon.png">
     <link rel="stylesheet" href="css/app.css">
-    <title>Firebase Authentication</title>
+    <title>Doraemon Mini Games</title>
 </head>
 <body>
     <div id="app" v-cloak>
         <header>
-            <h1><a href="/">Game : {{ title }}</a></h1>
-            <!-- TODO -->
+            <h1><a href="/">Doraemon : {{ title }}</a></h1>
+            <!-- User information -->
             <div v-if="user">
                 {{ user.displayName }}<br>
                 {{ user.email }}<br>
             </div>
-            <!-- TODO -->
-            <img :src="user.photo || 'image/photo.png'" v-if="user">
+            <!-- User photo -->
+            <img :src="user.photo" v-if="user">
         </header>
 
         <nav>
-            <a href="#/home">Home</a>
-            <!-- TODO -->
+            <a href="#/home" :class="{ active: $route.path === '/home' }">Home</a>
+            <!-- Protected routes -->
             <template v-if="user">
-                <a href="#/protected">Protected</a>
-                <a href="#/demo13">Demo 13</a>
+                <a href="#/demo13" :class="{ active: $route.path === '/demo13' }">Game</a>
+                <a href="#/ranking" :class="{ active: $route.path === '/ranking' }">Ranking</a>
+                <a href="#/history" :class="{ active: $route.path === '/history' }">My Games</a>
             </template>
 
             <div></div>
 
-            <!-- TODO -->
+            <!-- User account management -->
             <template v-if="user">
-                <a href="#/sign-in?page=/update-password">Update Password</a>
-                <a href="#/update-profile">Update Profile</a>
-                <a href="#/sign-in?page=/delete-account">Delete Account</a>
+                <a href="#/sign-in?page=/update-password" :class="{ active: $route.path === '/update-password' }">Update Password</a>
+                <a href="#/update-profile" :class="{ active: $route.path === '/update-profile' }">Update Profile</a>
+                <a href="#/sign-in?page=/delete-account" :class="{ active: $route.path === '/delete-account' }">Delete Account</a>
                 <a href="#" @click.prevent="signOut">Sign Out</a>
             </template>
-            <!-- TODO -->
+            <!-- Authentication links -->
             <template v-else>
-                <a href="#/register">Register</a>
-                <a href="#/reset-password">Reset Password</a>
-                <a href="#/sign-in">Sign In</a>
+                <a href="#/register" :class="{ active: $route.path === '/register' }">Register</a>
+                <a href="#/reset-password" :class="{ active: $route.path === '/reset-password' }">Reset Password</a>
+                <a href="#/sign-in" :class="{ active: $route.path === '/sign-in' }">Sign In</a>
             </template>
         </nav>
 
         <router-view v-slot="{ Component }">
-            <transition name="slide" mode="out-in" appear>
+            <transition name="zoom" mode="out-in" appear>
                 <component :is="Component">
             </transition>
         </router-view>
@@ -94,8 +95,9 @@
             history: VueRouter.createWebHashHistory(),
             routes: [
                 { path: '/home'           , component: load('home') },
-                { path: '/protected'      , component: load('protected') },
-                { path: '/demo13'         , component: load('demo13') },
+                { path: '/demo13'          , component: load('demo13') },
+                { path: '/ranking'     , component: load('ranking') },
+                { path: '/history'      , component: load('history') },
                 { path: '/register'       , component: load('register') },
                 { path: '/reset-password' , component: load('reset-password') },
                 { path: '/sign-in'        , component: load('sign-in') },
@@ -109,13 +111,13 @@
         // Vue root component -------------------------------------------------
         const app = Vue.createApp({
             data: () => ({
-                title: '',
+                title: 'Mini Games',
                 user: null,
             }),
 
             watch: {
                 title() {
-                    document.title = 'Game : ' + this.title;
+                    document.title = 'Doraemon : ' + this.title;
                 },
             },
 
@@ -127,29 +129,25 @@
                     this.$refs.loader.close();
                 },
                 signOut() {
-                    // TODO:
-
                     AUTH.signOut();
                     this.$router.push('/');
-
                 },
             },
 
             created() {
-                // TODO: ----------------------------------
-
+                // Auth state handling
                 AUTH.onAuthStateChanged(user => {
                     this.user = user;
 
                     // Custom user data
                     if (user) {
                         USERS.doc(user.uid).get().then(doc => {
-                            this.user.photo = doc.data().photo;
+                            if (doc.exists) {
+                                this.user.photo = doc.data().photo;
+                            }
                         });
                     }
                 });
-
-                // ----------------------------------------
             },
         });
 
