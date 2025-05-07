@@ -2,24 +2,13 @@
     <main>
         <h1>Sign In</h1>
 
-        <form class="form" 
-              @submit.prevent="submit" 
-              @input="$event.target.setCustomValidity('')">
+        <form class="form" @submit.prevent="submit" @input="$event.target.setCustomValidity('')">
 
             <label>Email</label>
-            <input v-model.trim="email"
-                   type="email"
-                   required
-                   maxlength="100"
-                   ref="email"
-                   v-focus>
+            <input v-model.trim="email" type="email" required maxlength="100" ref="email" v-focus>
 
             <label>Password</label>
-            <input v-model.trim="password"
-                   type="password"
-                   required
-                   maxlength="100"
-                   ref="password">
+            <input v-model.trim="password" type="password" required maxlength="100" ref="password">
 
             <section>
                 <button>Submit</button>
@@ -27,14 +16,16 @@
                 <button @click.prevent="$router.push('/')">Cancel</button>
             </section>
         </form>
+        <button @click.prevent="googleSignIn">Sign In with Google</button>
     </main>
 </template>
 
 <script>
     app.component({
-        data: () => ({ 
+        data: () => ({
             email: '',
             password: '',
+            provider: new firebase.auth.GoogleAuthProvider(),
         }),
 
         methods: {
@@ -43,7 +34,7 @@
                 this.password = '';
                 this.$refs.email.focus();
             },
-            submit() { 
+            submit() {
                 this.$root.block();
 
                 // Update Password --> #/sign-in?page=/update-password
@@ -67,7 +58,37 @@
                     });
 
                 // ----------------------------------------
+
+
             },
+            googleSignIn() {
+                this.$root.block();
+
+                const page = this.$route.query.page;
+
+                AUTH.signInWithPopup(this.provider)
+                    .then(result => {
+                        const user = result.user;
+                        // write user data to Firestore
+                        return DB.collection('users').doc(user.uid).set({
+                            name: user.displayName,
+                            email: user.email,
+                            photo: user.photoURL,
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        }, { merge: true });
+                    })
+                    .then(() => {
+                        this.$root.unblock();
+                        // redirect after login successful
+                        this.$router.push(page || '/');
+                    })
+                    .catch(error => {
+                        this.$root.unblock();
+                        console.error('Google Sign In Failed：', error);
+                        // you can do UI display here
+                        alert('Google Sign In Failed，Please try again later');
+                    });
+            }
         },
 
         created() {
