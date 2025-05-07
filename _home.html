@@ -1,0 +1,20 @@
+<template>
+    <main>
+        <h1>Home</h1>
+
+        <!-- TODO -->
+        <img src="image/home.jpg" v-if="$root.user">
+    </main>
+</template>
+
+<script>
+    app.component({
+        data: () => ({
+
+        }),
+
+        created() {
+            this.$root.title = 'Home';
+        },
+    });
+</script>

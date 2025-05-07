@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="image/favicon.png">
+    <link rel="stylesheet" href="css/app.css">
+    <title>Firebase Authentication</title>
+</head>
+<body>
+    <div id="app" v-cloak>
+        <header>
+            <h1><a href="/">Game : {{ title }}</a></h1>
+            <!-- TODO -->
+            <div v-if="user">
+                {{ user.displayName }}<br>
+                {{ user.email }}<br>
+            </div>
+            <!-- TODO -->
+            <img :src="user.photo || 'image/photo.png'" v-if="user">
+        </header>
+
+        <nav>
+            <a href="#/home">Home</a>
+            <!-- TODO -->
+            <template v-if="user">
+                <a href="#/protected">Protected</a>
+                <a href="#/demo13">Demo 13</a>
+            </template>
+
+            <div></div>
+
+            <!-- TODO -->
+            <template v-if="user">
+                <a href="#/sign-in?page=/update-password">Update Password</a>
+                <a href="#/update-profile">Update Profile</a>
+                <a href="#/sign-in?page=/delete-account">Delete Account</a>
+                <a href="#" @click.prevent="signOut">Sign Out</a>
+            </template>
+            <!-- TODO -->
+            <template v-else>
+                <a href="#/register">Register</a>
+                <a href="#/reset-password">Reset Password</a>
+                <a href="#/sign-in">Sign In</a>
+            </template>
+        </nav>
+
+        <router-view v-slot="{ Component }">
+            <transition name="slide" mode="out-in" appear>
+                <component :is="Component">
+            </transition>
+        </router-view>
+
+        <dialog id="loader" ref="loader">
+            <img src="image/loader.gif">
+        </dialog>
+    </div>
+
+    <!-- Add geometry & drawing library -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCBdwinhBxfD7cqHUCw9ja3vCwrUoSFsro&libraries=geometry,drawing"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/11.1.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/11.1.0/firebase-firestore-compat.min.js"></script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/11.1.0/firebase-auth-compat.min.js"></script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-router/4.5.0/vue-router.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.slim.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Setup (Google Maps) ================================================
+        
+        const gm = google.maps;
+        const center = new gm.LatLng(3.215600, 101.728100); // [OR] { lat: 3.215600, lng: 101.728100 }
+        let map = null;
+        
+        // Setup (Firebase) ===================================================
+
+        // Intialize firebase app
+        firebase.initializeApp({
+            apiKey: 'AIzaSyCeT8kfV0G966nsdddnY8aMmwz_joqyV_c',
+            projectId: 'tay-202501',
+        });
+
+        // Setup firebase firestore
+        const DB = firebase.firestore();
+        const MARKERS = DB.collection('markers');
+        const SHAPES = DB.collection('shapes');
+        let unsubscribe = null;
+        const AUTH = firebase.auth();
+        const USERS = firebase.firestore().collection('users');
+
+        // Vue router ---------------------------------------------------------
+        const router = VueRouter.createRouter({
+            history: VueRouter.createWebHashHistory(),
+            routes: [
+                { path: '/home'           , component: load('home') },
+                { path: '/protected'      , component: load('protected') },
+                { path: '/demo13'         , component: load('demo13') },
+                { path: '/register'       , component: load('register') },
+                { path: '/reset-password' , component: load('reset-password') },
+                { path: '/sign-in'        , component: load('sign-in') },
+                { path: '/update-password', component: load('update-password') },
+                { path: '/update-profile' , component: load('update-profile') },
+                { path: '/delete-account' , component: load('delete-account') },
+                { path: '/:all(.*)'       , redirect: '/home' },
+            ],
+        });
+
+        // Vue root component -------------------------------------------------
+        const app = Vue.createApp({
+            data: () => ({
+                title: '',
+                user: null,
+            }),
+
+            watch: {
+                title() {
+                    document.title = 'Game : ' + this.title;
+                },
+            },
+
+            methods: {
+                block() {
+                    this.$refs.loader.showModal();
+                },
+                unblock() {
+                    this.$refs.loader.close();
+                },
+                signOut() {
+                    // TODO:
+
+                    AUTH.signOut();
+                    this.$router.push('/');
+
+                },
+            },
+
+            created() {
+                // TODO: ----------------------------------
+
+                AUTH.onAuthStateChanged(user => {
+                    this.user = user;
+
+                    // Custom user data
+                    if (user) {
+                        USERS.doc(user.uid).get().then(doc => {
+                            this.user.photo = doc.data().photo;
+                        });
+                    }
+                });
+
+                // ----------------------------------------
+            },
+        });
+
+        app.directive('focus', {
+            mounted(el) { 
+                el.focus(); 
+            },
+        });
+
+        app.use(router);
+
+        const root = app.mount('#app');
+    </script>
+</body>
+</html>
