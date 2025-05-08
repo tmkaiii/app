@@ -38,6 +38,24 @@
                 <button @click.prevent="$router.push('/')">Cancel</button>
             </section>
         </form>
+
+        <!-- Email verification notification (shown after registration) -->
+        <div v-if="showVerificationNotice" class="verification-notice">
+            <div class="verification-content">
+                <h2>Verify Your Email</h2>
+                <p>We've sent a verification email to <strong>{{ email }}</strong></p>
+                <p>Please check your inbox and click the verification link to activate your account.</p>
+                
+                <div class="verification-actions">
+                    <button @click="resendVerificationEmail" :disabled="resendDisabled" class="resend-btn">
+                        {{ resendDisabled ? `Resend email (${countdown}s)` : 'Resend verification email' }}
+                    </button>
+                    <button @click="continueWithoutVerification" class="continue-btn">
+                        Continue without verification
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 </template>
 
@@ -49,7 +67,10 @@
             name: '',
             photo: null,
             webcamActive: false,
-            stream: null
+            stream: null,
+            showVerificationNotice: false,
+            resendDisabled: false,
+            countdown: 60
         }),
 
         computed: {
@@ -173,6 +194,7 @@
                 this.$refs.file.value = '';
                 this.stopWebcam(); // Make sure to stop webcam if it's active
                 this.$refs.email.focus();
+                this.showVerificationNotice = false;
             },
             
             submit() {
@@ -180,7 +202,6 @@
 
                 AUTH.createUserWithEmailAndPassword(this.email, this.password)
                     .then(credential => {
-
                         const user = credential.user;
 
                         // create user detail object
@@ -188,13 +209,16 @@
                             name: this.name,
                             email: this.email,
                             photo: this.photo || null,
-                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                            emailVerified: false // Track verification status in database
                         };
 
                         // Update profile to firebase
                         return Promise.all([
                             user.updateProfile({ displayName: this.name }),
-                            firebase.firestore().collection('users').doc(user.uid).set(userData)
+                            firebase.firestore().collection('users').doc(user.uid).set(userData),
+                            // Send verification email
+                            user.sendEmailVerification()
                         ]);
                     })
                     .then(() => {
@@ -207,19 +231,95 @@
                             this.$root.user.photo = this.photo;
                         }
 
-                        // register successful
+                        // Show verification notice
+                        this.showVerificationNotice = true;
+                        
+                        // Unblock UI
                         this.$root.unblock();
-                        this.$router.push('/');
                     })
                     .catch(error => {
                         this.$root.unblock();
                         handleError(error, this.$refs.email, this.$refs.password);
                     });
+            },
+            
+            // Resend verification email
+            resendVerificationEmail() {
+                if (this.resendDisabled) return;
+                
+                this.resendDisabled = true;
+                this.startCountdown();
+                
+                const user = firebase.auth().currentUser;
+                if (user) {
+                    this.$root.block();
+                    
+                    user.sendEmailVerification()
+                        .then(() => {
+                            this.$root.unblock();
+                            alert('Verification email has been resent. Please check your inbox.');
+                        })
+                        .catch(error => {
+                            this.$root.unblock();
+                            console.error('Error sending verification email:', error);
+                            alert('Error sending verification email: ' + error.message);
+                        });
+                } else {
+                    alert('You must be logged in to resend the verification email.');
+                }
+            },
+            
+            // Start countdown for resend button
+            startCountdown() {
+                this.countdown = 60;
+                const timer = setInterval(() => {
+                    this.countdown--;
+                    if (this.countdown <= 0) {
+                        clearInterval(timer);
+                        this.resendDisabled = false;
+                    }
+                }, 1000);
+            },
+            
+            // Continue without verification
+            continueWithoutVerification() {
+                this.showVerificationNotice = false;
+                this.$router.push('/');
+            },
+            
+            // Check if email is verified
+            checkEmailVerification() {
+                const user = firebase.auth().currentUser;
+                if (user) {
+                    // Reload user to get the latest emailVerified status
+                    user.reload().then(() => {
+                        if (user.emailVerified) {
+                            // Update user's verification status in Firestore
+                            firebase.firestore().collection('users').doc(user.uid).update({
+                                emailVerified: true
+                            }).then(() => {
+                                // Email verified, redirect to homepage
+                                this.showVerificationNotice = false;
+                                this.$router.push('/');
+                            });
+                        }
+                    });
+                }
             }
         },
 
         created() {
             this.$root.title = 'Register';
+            
+            // Check if the user came from email verification
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            
+            if (mode === 'verifyEmail') {
+                // User is coming back from verification link
+                // You can add some UI feedback here if needed
+                this.checkEmailVerification();
+            }
         },
         
         beforeUnmount() {
@@ -230,7 +330,82 @@
 </script>
 
 <style>
-/* Webcam related styles */
+.verification-notice {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(48, 167, 215, 0.4);
+    backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.verification-content {
+    background-color: white;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+}
+
+.verification-content h2 {
+    color: var(--doraemon-dark-blue);
+    margin-top: 0;
+    border-bottom: 2px solid var(--doraemon-light-blue);
+    padding-bottom: 10px;
+}
+
+.verification-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.resend-btn, .continue-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 200px;
+}
+
+.resend-btn {
+    background-color: var(--doraemon-blue);
+    color: white;
+}
+
+.resend-btn:hover:not(:disabled) {
+    background-color: var(--doraemon-dark-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.resend-btn:disabled {
+    background-color: var(--doraemon-light-blue);
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.continue-btn {
+    background-color: var(--doraemon-grey);
+    color: var(--doraemon-dark-grey);
+}
+
+.continue-btn:hover {
+    background-color: var(--doraemon-light-blue);
+    color: var(--doraemon-dark-blue);
+    transform: translateY(-2px);
+}
+
 .photo-options {
     display: flex;
     align-items: center;
@@ -239,20 +414,24 @@
 }
 
 .webcam-btn, .capture-btn {
-    padding: 5px 10px;
-    background-color: #4285f4;
+    padding: 8px 15px;
+    background-color: var(--doraemon-blue);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 20px;
     cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
 }
 
 .webcam-btn:hover, .capture-btn:hover {
-    background-color: #3367d6;
+    background-color: var(--doraemon-dark-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
 }
 
 .webcam-container {
-    margin: 10px 0;
+    margin: 15px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -261,9 +440,10 @@
 .webcam-video {
     width: 100%;
     max-width: 400px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-bottom: 10px;
+    border: 2px solid var(--doraemon-light-blue);
+    border-radius: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .photo {
@@ -271,6 +451,71 @@
     height: 150px;
     object-fit: cover;
     border-radius: 50%;
-    border: 2px solid #ddd;
+    border: 3px solid var(--doraemon-blue);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.photo:hover {
+    transform: scale(1.05);
+    border-color: var(--doraemon-dark-blue);
+}
+</style>
+
+<style>
+/* Webcam related styles */
+.photo-options {
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   margin-bottom: 10px;
+}
+
+.webcam-btn, .capture-btn {
+   padding: 8px 15px;
+   background-color: var(--doraemon-blue);
+   color: white;
+   border: none;
+   border-radius: 20px;
+   cursor: pointer;
+   transition: all 0.3s ease;
+   font-weight: bold;
+}
+
+.webcam-btn:hover, .capture-btn:hover {
+   background-color: var(--doraemon-dark-blue);
+   transform: translateY(-2px);
+   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.webcam-container {
+   margin: 15px 0;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+}
+
+.webcam-video {
+   width: 100%;
+   max-width: 400px;
+   border: 2px solid var(--doraemon-light-blue);
+   border-radius: 15px;
+   margin-bottom: 15px;
+   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.photo {
+   width: 150px;
+   height: 150px;
+   object-fit: cover;
+   border-radius: 50%;
+   border: 3px solid var(--doraemon-blue);
+   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+   transition: all 0.3s ease;
+}
+
+.photo:hover {
+   transform: scale(1.05);
+   border-color: var(--doraemon-dark-blue);
 }
 </style>

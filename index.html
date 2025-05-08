@@ -117,22 +117,22 @@
         });
 
         // Add this navigation guard
-router.beforeEach((to, from, next) => {
-    // If navigating away from game page to any other page
-    if (from.path === '/doraemon-game' && to.path !== '/doraemon-game') {
-        // Stop game music
-        AUDIO_GAME_BG.pause();
-        isGameMusicPlaying = false;
-    }
-    
-    // If navigating to game page from any other page
-    if (to.path === '/doraemon-game' && from.path !== '/doraemon-game') {
-        // Stop home music if it's playing
-        AUDIO_HOME_BG.pause();
-    }
-    
-    next();
-});
+        router.beforeEach((to, from, next) => {
+            // If navigating away from game page to any other page
+            if (from.path === '/doraemon-game' && to.path !== '/doraemon-game') {
+                // Stop game music
+                AUDIO_GAME_BG.pause();
+                isGameMusicPlaying = false;
+            }
+
+            // If navigating to game page from any other page
+            if (to.path === '/doraemon-game' && from.path !== '/doraemon-game') {
+                // Stop home music if it's playing
+                AUDIO_HOME_BG.pause();
+            }
+
+            next();
+        });
 
         // Vue root component -------------------------------------------------
         const app = Vue.createApp({
@@ -154,28 +154,28 @@ router.beforeEach((to, from, next) => {
                 },
 
                 '$route'(to, from) {
-            if (to.path === '/doraemon-game') {
-                // Going to game page, pause home music
-                AUDIO_HOME_BG.pause();
-            } else if (from && from.path === '/doraemon-game') {
-                // Coming from game page, resume home music if it was playing
-                if (this.isHomeMusicPlaying) {
-                    AUDIO_HOME_BG.play();
+                    if (to.path === '/doraemon-game') {
+                        // Going to game page, pause home music
+                        AUDIO_HOME_BG.pause();
+                    } else if (from && from.path === '/doraemon-game') {
+                        // Coming from game page, resume home music if it was playing
+                        if (this.isHomeMusicPlaying) {
+                            AUDIO_HOME_BG.play();
+                        }
+                    }
                 }
-            }
-        }
             },
 
             methods: {
                 toggleHomeMusic() {
-            if (this.isHomeMusicPlaying) {
-                AUDIO_HOME_BG.pause();
-                this.isHomeMusicPlaying = false;
-            } else {
-                AUDIO_HOME_BG.play();
-                this.isHomeMusicPlaying = true;
-            }
-        },
+                    if (this.isHomeMusicPlaying) {
+                        AUDIO_HOME_BG.pause();
+                        this.isHomeMusicPlaying = false;
+                    } else {
+                        AUDIO_HOME_BG.play();
+                        this.isHomeMusicPlaying = true;
+                    }
+                },
 
                 block() {
                     this.$refs.loader.showModal();

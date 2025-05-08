@@ -167,6 +167,7 @@
                 </div>
 
                 <button @click="selectedGame = null" class="close-details-button">Close</button>
+                
             </div>
         </div>
     </main>
@@ -372,17 +373,25 @@
         display: flex;
         justify-content: space-between;
         margin-bottom: 20px;
-        padding: 10px;
-        background-color: #f5f5f5;
-        border-radius: 8px;
+        padding: 15px;
+        background-color: var(--doraemon-lighter-blue); 
+        border-radius: 15px; 
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); 
     }
 
     .history-item {
         padding: 15px;
         margin-bottom: 15px;
-        border-radius: 8px;
+        border-radius: 15px; 
         background-color: white;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); 
+        transition: all 0.3s ease; 
+        border-left: 5px solid var(--doraemon-blue); 
+    }
+
+    .history-item:hover {
+        transform: translateY(-5px); 
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
     }
 
     .game-info {
@@ -390,13 +399,14 @@
         justify-content: space-between;
         margin-bottom: 10px;
         padding-bottom: 10px;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--doraemon-light-blue); /
     }
 
     .game-difficulty {
-        padding: 3px 8px;
-        border-radius: 4px;
+        padding: 3px 10px; 
+        border-radius: 20px; 
         font-size: 12px;
+        font-weight: bold;
     }
 
     .game-difficulty.easy {
@@ -404,9 +414,9 @@
         color: #2c882c;
     }
 
-    .game-difficulty.medium {
-        background-color: #e7eef7;
-        color: #2c5988;
+    .game-difficulty.medium { 
+        background-color: var(--doraemon-light-blue); 
+        color: var(--doraemon-dark-blue); 
     }
 
     .game-difficulty.hard {
@@ -423,17 +433,22 @@
     .stat-item {
         text-align: center;
         flex: 1;
+        padding: 10px;
+        background-color: var(--doraemon-lighter-blue); 
+        border-radius: 10px; 
+        margin: 0 5px;
     }
 
     .stat-value {
         font-size: 24px;
         font-weight: bold;
         margin-bottom: 5px;
+        color: var(--doraemon-blue); 
     }
 
     .stat-label {
         font-size: 12px;
-        color: #666;
+        color: var(--doraemon-dark-grey); 
     }
 
     .details-button {
@@ -441,11 +456,19 @@
         width: 100%;
         padding: 10px;
         border: none;
-        background-color: #4285f4;
+        background-color: var(--doraemon-blue); 
         color: white;
-        border-radius: 4px;
+        border-radius: 20px; 
         cursor: pointer;
         margin-top: 10px;
+        font-weight: bold;
+        transition: all 0.3s ease; 
+    }
+
+    .details-button:hover {
+        background-color: var(--doraemon-dark-blue); 
+        transform: translateY(-2px); 
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); 
     }
 
     .pagination {
@@ -456,21 +479,31 @@
     }
 
     .page-button {
-        padding: 5px 15px;
-        background-color: #4285f4;
+        padding: 8px 20px; 
+        background-color: var(--doraemon-blue); 
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 20px; 
         cursor: pointer;
+        transition: all 0.3s ease; 
+        margin: 0 5px;
+    }
+
+    .page-button:hover:not(:disabled) {
+        background-color: var(--doraemon-dark-blue); 
+        transform: translateY(-2px); 
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); 
     }
 
     .page-button:disabled {
-        background-color: #ccc;
+        background-color: var(--doraemon-light-blue); 
+        opacity: 0.7;
         cursor: not-allowed;
     }
 
     .page-info {
         margin: 0 15px;
+        color: var(--doraemon-dark-blue); 
     }
 
     .game-details-modal {
@@ -479,7 +512,8 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: rgba(0, 0, 0, 0.7);
+        background-color: rgba(48, 167, 215, 0.4); 
+        backdrop-filter: blur(3px); 
         display: flex;
         justify-content: center;
         align-items: center;
@@ -488,34 +522,51 @@
 
     .modal-content {
         background-color: white;
-        padding: 20px;
-        border-radius: 8px;
+        padding: 25px;
+        border-radius: 15px; 
         max-width: 700px;
         width: 90%;
         max-height: 80vh;
         overflow-y: auto;
         position: relative;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15); 
     }
 
     .close-button {
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 15px;
+        right: 15px;
         background: none;
         border: none;
         font-size: 24px;
         cursor: pointer;
+        color: var(--doraemon-dark-blue); 
+        transition: transform 0.2s ease; 
+    }
+
+    .close-button:hover {
+        transform: rotate(90deg); 
+        color: var(--doraemon-red); 
     }
 
     .detail-section {
         margin: 20px 0;
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        gap: 15px;
+        background-color: var(--doraemon-lighter-blue); 
+        padding: 15px;
+        border-radius: 15px; 
     }
 
     .game-stats-section {
         margin: 20px 0;
+    }
+
+    .game-stats-section h3 {
+        color: var(--doraemon-dark-blue); 
+        border-bottom: 2px solid var(--doraemon-light-blue); 
+        padding-bottom: 8px;
     }
 
     .performance-chart {
@@ -527,64 +578,86 @@
         justify-content: space-around;
         align-items: flex-end;
         height: 200px;
-        padding: 10px;
-        border: 1px solid #eee;
-        border-radius: 8px;
-        background-color: #f9f9f9;
+        padding: 15px;
+        border: 1px solid var(--doraemon-light-blue); 
+        border-radius: 15px; 
+        background-color: var(--doraemon-lighter-blue); 
     }
 
     .chart-bar {
         width: 60px;
-        background-color: #4285f4;
-        border-radius: 4px 4px 0 0;
+        background-color: var(--doraemon-blue); 
+        border-radius: 10px 10px 0 0; 
         position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
         min-height: 20px;
         transition: height 0.5s ease;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); 
     }
 
     .chart-value {
         position: absolute;
         top: -25px;
         font-weight: bold;
+        color: var(--doraemon-dark-blue);
     }
 
     .chart-label {
         position: absolute;
         bottom: -25px;
         font-size: 12px;
+        color: var(--doraemon-dark-grey);
     }
 
     .loading-container,
     .empty-state {
         text-align: center;
         padding: 50px 20px;
+        color: var(--doraemon-dark-grey);
     }
 
     .empty-state img {
         max-width: 200px;
         margin-bottom: 20px;
+        border-radius: 10px;
     }
 
     .primary-button {
         padding: 10px 20px;
-        background-color: #4285f4;
+        background-color: var(--doraemon-blue);
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 20px;
         cursor: pointer;
         font-size: 16px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    .primary-button:hover {
+        background-color: var(--doraemon-dark-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
     }
 
     .close-details-button {
         display: block;
         width: 100%;
         padding: 10px;
-        background-color: #f5f5f5;
+        background-color: var(--doraemon-grey);
         border: none;
-        border-radius: 4px;
+        border-radius: 20px;
         margin-top: 20px;
         cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
     }
+
+    .close-details-button:hover {
+        background-color: var(--doraemon-blue);
+        color: white;
+        transform: translateY(-2px);
+    }
+</style>

@@ -399,17 +399,22 @@
         flex: 1;
         padding: 12px 20px;
         border: none;
-        background: #f0f0f0;
+        background: var(--doraemon-grey);
         cursor: pointer;
-        border-radius: 4px;
+        border-radius: 20px; 
         font-weight: bold;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease; 
     }
 
     .difficulty-tabs button.active {
-        background: #4285f4;
+        background: var(--doraemon-blue); 
         color: white;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .difficulty-tabs button:hover {
+        background: var(--doraemon-light-blue); 
+        transform: translateY(-2px); 
     }
 
     .refresh-container {
@@ -419,17 +424,20 @@
     }
 
     .refresh-button {
-        background-color: #4285f4;
+        background-color: var(--doraemon-blue); 
         color: white;
         border: none;
-        border-radius: 4px;
-        padding: 8px 16px;
+        border-radius: 20px; 
+        padding: 10px 20px; 
         cursor: pointer;
         font-weight: bold;
+        transition: all 0.3s ease; 
     }
 
     .refresh-button:hover {
-        background-color: #356ac3;
+        background-color: var(--doraemon-dark-blue); 
+        transform: translateY(-2px); 
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); 
     }
 
     .rankings-container {
@@ -440,14 +448,16 @@
     .personal-records h2 {
         margin: 30px 0 15px;
         font-size: 18px;
-        color: #333;
+        color: var(--doraemon-dark-blue); 
+        border-bottom: 2px solid var(--doraemon-light-blue); 
+        padding-bottom: 10px;
     }
 
     .ranking-table {
         width: 100%;
-        border-radius: 8px;
+        border-radius: 10px; 
         overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
     }
 
     .ranking-header,
@@ -459,21 +469,30 @@
     }
 
     .ranking-header {
-        background: #f0f0f0;
+        background: var(--doraemon-blue); 
         font-weight: bold;
+        color: white; 
     }
 
     .ranking-row {
         background: white;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--doraemon-light-blue); 
     }
 
     .ranking-row:last-child {
         border-bottom: none;
     }
 
+    .ranking-row:nth-child(even) {
+        background-color: var(--doraemon-lighter-blue); 
+    }
+
+    .ranking-row:hover {
+        background-color: var(--doraemon-light-blue); 
+    }
+
     .ranking-row.current-user {
-        background-color: rgba(66, 133, 244, 0.1);
+        background-color: rgba(48, 167, 215, 0.1); 
     }
 
     .player {
@@ -487,10 +506,11 @@
         height: 30px;
         border-radius: 50%;
         object-fit: cover;
+        border: 2px solid var(--doraemon-blue); 
     }
 
     .you-tag {
-        background: #4285f4;
+        background: var(--doraemon-blue); 
         color: white;
         padding: 2px 6px;
         border-radius: 10px;
@@ -507,19 +527,25 @@
 
     .record-card {
         padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 15px; 
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); 
         position: relative;
         background: white;
         min-height: 150px;
+        transition: all 0.3s ease; 
+    }
+
+    .record-card:hover {
+        transform: translateY(-5px); 
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
     }
 
     .record-card.easy {
         border-top: 4px solid #2c882c;
     }
 
-    .record-card.medium {
-        border-top: 4px solid #2c5988;
+    .record-card.medium { 
+        border-top: 4px solid var(--doraemon-blue); 
     }
 
     .record-card.hard {
@@ -531,7 +557,7 @@
         top: -10px;
         right: 10px;
         padding: 3px 10px;
-        border-radius: 4px;
+        border-radius: 20px; 
         font-size: 12px;
         font-weight: bold;
         text-transform: uppercase;
@@ -543,8 +569,8 @@
     }
 
     .record-card.medium .difficulty-label {
-        background-color: #e7eef7;
-        color: #2c5988;
+        background-color: var(--doraemon-light-blue); 
+        color: var(--doraemon-dark-blue); 
     }
 
     .record-card.hard .difficulty-label {
@@ -559,10 +585,10 @@
     }
 
     .score-value {
-        font-size: 18px;
+        font-size: 24px; 
         font-weight: bold;
         margin-bottom: 15px;
-        color: #4285f4;
+        color: var(--doraemon-blue); 
     }
 
     .score-details {
@@ -578,7 +604,7 @@
 
     .detail-label {
         font-weight: bold;
-        color: #666;
+        color: var(--doraemon-dark-grey); 
         margin-right: 5px;
     }
 
@@ -591,25 +617,32 @@
     }
 
     .record-empty p {
-        color: #888;
+        color: var(--doraemon-dark-grey); 
         margin-bottom: 15px;
         text-align: center;
     }
 
     .play-button {
-        padding: 8px 16px;
-        background-color: #4285f4;
+        padding: 10px 20px; 
+        background-color: var(--doraemon-blue); 
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 20px; 
         cursor: pointer;
         font-weight: bold;
+        transition: all 0.3s ease; 
+    }
+
+    .play-button:hover {
+        background-color: var(--doraemon-dark-blue); 
+        transform: translateY(-2px); 
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1); 
     }
 
     .loading,
     .no-records {
         padding: 40px;
         text-align: center;
-        color: #666;
+        color: var(--doraemon-dark-grey); 
     }
 </style>
