@@ -1,0 +1,615 @@
+<template>
+    <main>
+        <h1>Ranking</h1>
+
+        <!-- Difficulty tabs -->
+        <div class="difficulty-tabs">
+            <button v-for="difficulty in ['easy', 'medium', 'hard']" :key="difficulty"
+                :class="{'active': currentDifficulty === difficulty}" @click="currentDifficulty = difficulty">
+                {{ capitalizeFirst(difficulty) }}
+            </button>
+        </div>
+
+        <!-- Refresh button (simple version) -->
+        <div class="refresh-container">
+            <button @click="refreshRankings()" class="refresh-button">
+                Refresh Rankings
+            </button>
+        </div>
+
+        <!-- Loading state -->
+        <div v-if="loading" class="loading">
+            Loading rankings...
+        </div>
+
+        <!-- No records state -->
+        <div v-else-if="!rankings[currentDifficulty] || rankings[currentDifficulty].length === 0" class="no-records">
+            <p>No game records found for {{ currentDifficulty }} difficulty.</p>
+            <button @click="$router.push('/doraemon-game?')" class="play-button">Play {{
+                capitalizeFirst(currentDifficulty) }}</button>
+        </div>
+
+        <!-- Top records for current difficulty -->
+        <div v-else class="rankings-container">
+            <h2>{{ capitalizeFirst(currentDifficulty) }} - Top Records</h2>
+
+            <div class="ranking-table">
+                <div class="ranking-header">
+                    <div class="rank">#</div>
+                    <div class="player">Player</div>
+                    <div class="score">Score</div>
+                    <div class="time">Time ↓</div>
+                    <div class="date">Date</div>
+                </div>
+
+                <div v-for="(entry, index) in rankings[currentDifficulty]" :key="index" class="ranking-row"
+                    :class="{'current-user': entry.userId === $root.user.uid}">
+                    <div class="rank">{{ index + 1 }}</div>
+                    <div class="player">
+                        <img v-if="userProfiles[entry.userId]?.photo" :src="userProfiles[entry.userId].photo"
+                            class="player-avatar" alt="Player Avatar">
+                        {{ userProfiles[entry.userId]?.name || 'Anonymous' }}
+                        <span v-if="entry.userId === $root.user.uid" class="you-tag">You</span>
+                    </div>
+                    <div class="score">{{ entry.score }}</div>
+                    <div class="time">{{ formatTime(entry.time) }}</div>
+                    <div class="date">{{ formatDate(entry.timestamp) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Your personal records section -->
+        <div class="personal-records">
+            <h2>Your Records</h2>
+
+            <div class="records-grid">
+                <!-- Easy record -->
+                <div class="record-card easy">
+                    <div class="difficulty-label">Easy</div>
+
+                    <div v-if="userBestScores.easy" class="record-content">
+                        <div class="score-value">Best Time: {{ formatTime(userBestScores.easy.time) }}</div>
+                        <div class="score-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Score:</span>
+                                <span class="detail-value">{{ userBestScores.easy.score }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Rank:</span>
+                                <span class="detail-value">{{ findUserRank('easy') || 'N/A' }}</span>
+                            </div>
+                            <div class="detail-item full-width">
+                                <span class="detail-label">Date:</span>
+                                <span class="detail-value">{{ formatDate(userBestScores.easy.timestamp) }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-else class="record-empty">
+                        <p>You haven't played Easy level yet</p>
+                        <button @click="$router.push('/doraemon-game')" class="play-button">Play Easy</button>
+                    </div>
+                </div>
+
+                <!-- Medium record -->
+                <div class="record-card medium">
+                    <div class="difficulty-label">Medium</div>
+
+                    <div v-if="userBestScores.medium" class="record-content">
+                        <div class="score-value">Best Time: {{ formatTime(userBestScores.medium.time) }}</div>
+                        <div class="score-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Score:</span>
+                                <span class="detail-value">{{ userBestScores.medium.score }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Rank:</span>
+                                <span class="detail-value">{{ findUserRank('medium') || 'N/A' }}</span>
+                            </div>
+                            <div class="detail-item full-width">
+                                <span class="detail-label">Date:</span>
+                                <span class="detail-value">{{ formatDate(userBestScores.medium.timestamp) }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-else class="record-empty">
+                        <p>You haven't played Medium level yet</p>
+                        <button @click="$router.push('/doraemon-game')" class="play-button">Play
+                            Medium</button>
+                    </div>
+                </div>
+
+                <!-- Hard record -->
+                <div class="record-card hard">
+                    <div class="difficulty-label">Hard</div>
+
+                    <div v-if="userBestScores.hard" class="record-content">
+                        <div class="score-value">Best Time: {{ formatTime(userBestScores.hard.time) }}</div>
+                        <div class="score-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Score:</span>
+                                <span class="detail-value">{{ userBestScores.hard.score }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Rank:</span>
+                                <span class="detail-value">{{ findUserRank('hard') || 'N/A' }}</span>
+                            </div>
+                            <div class="detail-item full-width">
+                                <span class="detail-label">Date:</span>
+                                <span class="detail-value">{{ formatDate(userBestScores.hard.timestamp) }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-else class="record-empty">
+                        <p>You haven't played Hard level yet</p>
+                        <button @click="$router.push('/doraemon-game')" class="play-button">Play Hard</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</template>
+
+<script>
+    app.component({
+        data: () => ({
+            rankings: {
+                easy: [],
+                medium: [],
+                hard: []
+            },
+            userBestScores: {
+                easy: null,
+                medium: null,
+                hard: null
+            },
+            topScores: {
+                easy: null,
+                medium: null,
+                hard: null
+            },
+            userProfiles: {},
+            loading: true,
+            currentDifficulty: 'medium'
+        }),
+
+        methods: {
+            // Manual refresh rankings
+            refreshRankings() {
+                this.loading = true;
+                this.fetchRankings();
+            },
+
+            // Fetch rankings for all difficulties
+            fetchRankings() {
+                // Check if user is logged in
+                if (!this.$root.user) {
+                    this.$router.push('/sign-in');
+                    return;
+                }
+
+                // Get reference to Firestore
+                const db = firebase.firestore();
+
+                // Create base query without difficulty filter
+                let baseQuery = db.collection('game_results');
+
+                // Fetch results for all three difficulties
+                Promise.all([
+                    this.fetchDifficultyRankings(baseQuery, 'easy'),
+                    this.fetchDifficultyRankings(baseQuery, 'medium'),
+                    this.fetchDifficultyRankings(baseQuery, 'hard')
+                ])
+                    .then(() => {
+                        // Get unique user IDs from all rankings
+                        const userIds = new Set();
+
+                        for (const difficulty in this.rankings) {
+                            if (this.rankings[difficulty]) {
+                                this.rankings[difficulty].forEach(game => {
+                                    if (game && game.userId) {
+                                        userIds.add(game.userId);
+                                    }
+                                });
+                            }
+                        }
+
+                        // Fetch user profiles
+                        return this.fetchUserProfiles([...userIds]);
+                    })
+                    .then(() => {
+                        // Find user's best scores and top scores
+                        this.findUserBestScores();
+                        this.findTopScores();
+                        this.loading = false;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching rankings:', error);
+                        this.loading = false;
+                    });
+            },
+
+            // Fetch rankings for a specific difficulty
+            fetchDifficultyRankings(baseQuery, difficulty) {
+                return baseQuery
+                    .where('difficulty', '==', difficulty.toLowerCase())
+                    .orderBy('time', 'asc')
+                    .limit(20)
+                    .get()
+                    .then(snapshot => {
+                        // Process results and organize by user (one best score per user)
+                        const userBestScores = {};
+                        console.log(`Found ${snapshot.docs.length} records for ${difficulty}`);
+                        snapshot.docs.forEach(doc => {
+                            const data = doc.data();
+                            if (!data || !data.userId) return;
+                            
+                            const userId = data.userId;
+
+                            // If this user doesn't have a best score yet, or this time is better (lower)
+                            if (!userBestScores[userId] || data.time < userBestScores[userId].time) {
+                                userBestScores[userId] = {
+                                    id: doc.id,
+                                    userId: userId,
+                                    score: data.score || 0,
+                                    time: data.time || 0,
+                                    timestamp: data.timestamp?.toDate() || new Date(),
+                                    difficulty: difficulty
+                                };
+                            }
+                        });
+
+                        // Convert to array and sort by time (ascending - lower is better)
+                        this.rankings[difficulty] = Object.values(userBestScores)
+                            .sort((a, b) => a.time - b.time);
+                    })
+                    .catch(error => {
+                        console.error(`Error fetching ${difficulty} rankings:`, error);
+                        this.rankings[difficulty] = [];
+                    });
+            },
+
+            // Fetch user profiles
+            fetchUserProfiles(userIds) {
+                // Create an object to store user profiles
+                this.userProfiles = {};
+
+                if (!userIds || userIds.length === 0) {
+                    return Promise.resolve();
+                }
+
+                // Create promises to fetch each user profile
+                const profilePromises = userIds.map(userId => {
+                    return firebase.firestore().collection('users').doc(userId).get()
+                        .then(doc => {
+                            if (doc.exists) {
+                                this.userProfiles[userId] = doc.data();
+                            } else {
+                                // Default values for users without profiles
+                                this.userProfiles[userId] = {
+                                    name: 'Unknown Player',
+                                    photo: null
+                                };
+                            }
+                        })
+                        .catch(() => {
+                            // Default values on error
+                            this.userProfiles[userId] = {
+                                name: 'Unknown Player',
+                                photo: null
+                            };
+                        });
+                });
+
+                // Wait for all profile fetches to complete
+                return Promise.all(profilePromises);
+            },
+
+            // Find user's best scores for each difficulty
+            findUserBestScores() {
+                if (!this.$root.user) return;
+
+                const userId = this.$root.user.uid;
+
+                // Check each difficulty ranking for the current user
+                for (const difficulty in this.rankings) {
+                    if (!this.rankings[difficulty]) continue;
+                    
+                    const userScore = this.rankings[difficulty].find(entry => entry && entry.userId === userId);
+                    this.userBestScores[difficulty] = userScore || null;
+                }
+            },
+
+            // Find top scores for each difficulty
+            findTopScores() {
+                for (const difficulty in this.rankings) {
+                    // Make sure there are rankings for this difficulty
+                    if (this.rankings[difficulty] && this.rankings[difficulty].length > 0) {
+                        this.topScores[difficulty] = this.rankings[difficulty][0] || null;
+                    } else {
+                        this.topScores[difficulty] = null;
+                    }
+                }
+            },
+
+            // Find user's rank in the current difficulty
+            findUserRank(difficulty) {
+                if (!this.$root.user || !this.rankings[difficulty]) return null;
+
+                const userId = this.$root.user.uid;
+                const index = this.rankings[difficulty].findIndex(entry => entry && entry.userId === userId);
+
+                return index >= 0 ? (index + 1) : null;
+            },
+
+            // Format time in minutes and seconds
+            formatTime(seconds) {
+                if (seconds == null || isNaN(seconds)) {
+                    return '--';
+                }
+
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = Math.floor(seconds % 60);
+                return `${minutes}m ${remainingSeconds.toString().padStart(2, '0')}s`;
+            },
+
+            // Format date
+            formatDate(date) {
+                if (!date) return '--';
+
+                return new Date(date).toLocaleDateString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            },
+
+            // Capitalize first letter
+            capitalizeFirst(string) {
+                if (!string) return '';
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+        },
+
+        created() {
+            // Check permissions
+            if (!this.$root.user) {
+                this.$router.push('/sign-in');
+                return;
+            }
+
+            this.$root.title = 'Ranking';
+
+            // Load ranking data
+            this.fetchRankings();
+        }
+    });
+</script>
+
+<style>
+    .difficulty-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .difficulty-tabs button {
+        flex: 1;
+        padding: 12px 20px;
+        border: none;
+        background: #f0f0f0;
+        cursor: pointer;
+        border-radius: 4px;
+        font-weight: bold;
+        transition: all 0.2s ease;
+    }
+
+    .difficulty-tabs button.active {
+        background: #4285f4;
+        color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .refresh-container {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 15px;
+    }
+
+    .refresh-button {
+        background-color: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .refresh-button:hover {
+        background-color: #356ac3;
+    }
+
+    .rankings-container {
+        margin-bottom: 30px;
+    }
+
+    .rankings-container h2,
+    .personal-records h2 {
+        margin: 30px 0 15px;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .ranking-table {
+        width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .ranking-header,
+    .ranking-row {
+        display: grid;
+        grid-template-columns: 50px 2fr 1fr 1fr 1fr;
+        padding: 12px;
+        align-items: center;
+    }
+
+    .ranking-header {
+        background: #f0f0f0;
+        font-weight: bold;
+    }
+
+    .ranking-row {
+        background: white;
+        border-bottom: 1px solid #eee;
+    }
+
+    .ranking-row:last-child {
+        border-bottom: none;
+    }
+
+    .ranking-row.current-user {
+        background-color: rgba(66, 133, 244, 0.1);
+    }
+
+    .player {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .player-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .you-tag {
+        background: #4285f4;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 10px;
+        margin-left: 5px;
+    }
+
+    .records-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .record-card {
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        position: relative;
+        background: white;
+        min-height: 150px;
+    }
+
+    .record-card.easy {
+        border-top: 4px solid #2c882c;
+    }
+
+    .record-card.medium {
+        border-top: 4px solid #2c5988;
+    }
+
+    .record-card.hard {
+        border-top: 4px solid #882c2c;
+    }
+
+    .difficulty-label {
+        position: absolute;
+        top: -10px;
+        right: 10px;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .record-card.easy .difficulty-label {
+        background-color: #e7f7e7;
+        color: #2c882c;
+    }
+
+    .record-card.medium .difficulty-label {
+        background-color: #e7eef7;
+        color: #2c5988;
+    }
+
+    .record-card.hard .difficulty-label {
+        background-color: #f7e7e7;
+        color: #882c2c;
+    }
+
+    .record-content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .score-value {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #4285f4;
+    }
+
+    .score-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .detail-item.full-width {
+        grid-column: span 2;
+    }
+
+    .detail-label {
+        font-weight: bold;
+        color: #666;
+        margin-right: 5px;
+    }
+
+    .record-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .record-empty p {
+        color: #888;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .play-button {
+        padding: 8px 16px;
+        background-color: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .loading,
+    .no-records {
+        padding: 40px;
+        text-align: center;
+        color: #666;
+    }
+</style>

@@ -1,0 +1,429 @@
+/***** Font *****/
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
+
+:root {
+    --doraemon-blue: #30a7d7;
+    --doraemon-light-blue: #b3e0ff;
+    --doraemon-lighter-blue: #e6f5ff;
+    --doraemon-dark-blue: #1e77a0;
+    --doraemon-red: #ff6b6b;
+    --doraemon-white: #ffffff;
+    --doraemon-grey: #f0f0f0;
+    --doraemon-dark-grey: #666666;
+}
+
+body, input, textarea, select, button {
+    font-size: 16px;
+    font-family: 'Nunito', sans-serif;
+}
+
+/***** Layout *****/
+body {
+    margin: 0;
+    height: 100vh;
+    background-color: var(--doraemon-lighter-blue);
+    color: #333;
+}
+
+#app {
+    margin: 0;
+    height: 100vh;
+    display: grid;
+    grid: auto auto 1fr / auto;
+    background-image: url('https://i.imgur.com/PLACEHOLDER.png');
+    background-size: 100px;
+    background-position: bottom right;
+    background-repeat: no-repeat;
+}
+
+header {
+    padding: 10px 50px;
+    background: var(--doraemon-blue);
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    border-bottom: 5px solid var(--doraemon-dark-blue);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    margin: 0;
+    background: url(../image/doraemon-icon.png) no-repeat left center / 32px 32px;
+    padding-left: 40px;
+    flex: 1 1 auto;
+    color: white;
+    font-size: 24px;
+    letter-spacing: 1px;
+}
+
+header a {
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+header a:hover {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+}
+
+header div {
+    text-align: right;
+    color: white;
+    font-size: 14px;
+}
+
+header img {
+    border: 2px solid white;
+    background: var(--doraemon-light-blue);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+header img:hover {
+    transform: scale(1.1);
+}
+
+nav {
+    padding: 0 50px;
+    background: var(--doraemon-light-blue);
+    display: flex;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--doraemon-dark-blue);
+    display: block;
+    padding: 10px 20px;
+    white-space: nowrap;
+    font-weight: bold;
+    margin: 5px 2px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+nav a:hover {
+    background: var(--doraemon-blue);
+    color: white;
+    transform: translateY(-3px);
+}
+
+nav a.active {
+    background: var(--doraemon-dark-blue);
+    color: white;
+}
+
+nav div {
+    flex: 1 1 auto;
+}
+
+main {
+    padding: 20px 50px;
+    background-color: white;
+    margin: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: visible;
+}
+
+main::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    width: 150px;
+    height: 150px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+main h1 {
+    margin: 0;
+    margin-bottom: 20px;
+    color: var(--doraemon-dark-blue);
+    border-bottom: 2px solid var(--doraemon-light-blue);
+    padding-bottom: 10px;
+}
+
+/***** Table *****/
+.table {
+    border-collapse: collapse;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+.table th,
+.table td {
+    border: 1px solid var(--doraemon-light-blue);
+    padding: 10px;
+}
+
+.table th {
+    background: var(--doraemon-blue);
+    color: white;
+}
+
+.table tr:nth-child(even) td {
+    background-color: var(--doraemon-lighter-blue);
+}
+
+.table tr:hover td {
+    background: var(--doraemon-light-blue);
+}
+
+th.asc::after {
+    content: ' ▴';
+}
+
+th.desc::after {
+    content: ' ▾';
+}
+
+/***** Form *****/
+.form {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 15px;
+    place-content: start;
+    place-items: center start;
+}
+
+.form > section {
+    grid-column: 1 / -1;
+}
+
+.form input, .form textarea, .form select {
+    border: 2px solid var(--doraemon-light-blue);
+    border-radius: 20px;
+    padding: 8px 15px;
+    transition: all 0.3s ease;
+}
+
+.form input:focus, .form textarea:focus, .form select:focus {
+    outline: none;
+    border-color: var(--doraemon-blue);
+    box-shadow: 0 0 0 3px rgba(48, 167, 215, 0.3);
+}
+
+.form button {
+    background-color: var(--doraemon-blue);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.form button:hover {
+    background-color: var(--doraemon-dark-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+/***** Vue.js *****/
+[v-cloak] {
+    display: none !important;
+}
+
+/***** Transition: fade *****/
+.fade-enter-active,
+.fade-leave-active,
+.fade-move {
+    transition: 0.4s;
+} 
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+/***** Transition: zoom *****/
+.zoom-enter-active,
+.zoom-leave-active,
+.zoom-move {
+    transition: 0.4s;
+} 
+
+.zoom-enter-from,
+.zoom-leave-to {
+    opacity: 0;
+    transform: scale(0.5);
+}
+
+/***** Transition: rotate *****/
+.rotate-enter-active,
+.rotate-leave-active,
+.rotate-move {
+    transition: 0.4s;
+} 
+
+.rotate-enter-from,
+.rotate-leave-to {
+    opacity: 0;
+    transform: scale(0.5) rotate(1turn);
+}
+
+/***** Transition: slide *****/
+.slide-enter-active,
+.slide-leave-active,
+.slide-move {
+    transition: 0.4s;
+} 
+
+.slide-enter-from,
+.slide-leave-to {
+    opacity: 0;
+    transform: translate(-50px, 0);
+}
+
+/***** Transition: slide-left *****/
+.slide-left-enter-active,
+.slide-left-leave-active {
+    transition: 0.4s;
+}
+
+.slide-left-enter-from {
+    opacity: 0;
+    transform: translate(50px, 0);
+}
+
+.slide-left-leave-to {
+    opacity: 0;
+    transform: translate(-50px, 0);
+}
+
+/***** Transition: slide-right *****/
+.slide-right-enter-active,
+.slide-right-leave-active {
+    transition: 0.4s;
+}
+
+.slide-right-enter-from {
+    opacity: 0;
+    transform: translate(-50px, 0);
+}
+
+.slide-right-leave-to {
+    opacity: 0;
+    transform: translate(50px, 0);
+}
+
+/***** Custom *****/
+th {
+    user-select: none;
+    cursor: pointer;
+    text-transform: capitalize;
+}
+
+td:last-child {
+    position: relative;
+}
+
+td:last-child .photo {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform: translate(10px, -50%);
+    display: none;
+    z-index: 10;
+}
+
+tr:hover td:last-child .photo {
+    display: block;
+}
+
+.photo {
+    display: block;
+    border: 3px solid var(--doraemon-blue);
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Game specific elements */
+.game-card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border-left: 5px solid var(--doraemon-blue);
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.game-card h3 {
+    color: var(--doraemon-blue);
+    margin-top: 0;
+}
+
+.game-card img {
+    border-radius: 10px;
+    max-width: 100%;
+}
+
+.btn {
+    background-color: var(--doraemon-blue);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    display: inline-block;
+    margin: 5px;
+    text-decoration: none;
+}
+
+.btn:hover {
+    background-color: var(--doraemon-dark-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary {
+    background-color: var(--doraemon-light-blue);
+    color: var(--doraemon-dark-blue);
+}
+
+.btn-secondary:hover {
+    background-color: var(--doraemon-blue);
+    color: white;
+}
+
+/* Loader dialog */
+#loader {
+    border: none;
+    border-radius: 15px;
+    padding: 40px;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+#loader img {
+    display: block;
+    width: 80px;
+    height: 80px;
+}
+
+#loader::backdrop {
+    background: rgba(48, 167, 215, 0.4);
+    backdrop-filter: blur(3px);
+}

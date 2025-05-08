@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,10 +8,14 @@
     <link rel="stylesheet" href="css/app.css">
     <title>Doraemon Mini Games</title>
 </head>
+
 <body>
     <div id="app" v-cloak>
         <header>
             <h1><a href="/">Doraemon : {{ title }}</a></h1>
+            <button v-if="!isGamePage" class="home-music-btn" @click="toggleHomeMusic">
+                {{ isHomeMusicPlaying ? '🔊' : '🔇' }}
+            </button>
             <!-- User information -->
             <div v-if="user">
                 {{ user.displayName }}<br>
@@ -24,18 +29,20 @@
             <a href="#/home" :class="{ active: $route.path === '/home' }">Home</a>
             <!-- Protected routes -->
             <template v-if="user">
-                <a href="#/demo13" :class="{ active: $route.path === '/demo13' }">Game</a>
+                <a href="#/doraemon-game" :class="{ active: $route.path === '/doraemon-game' }">Game</a>
                 <a href="#/ranking" :class="{ active: $route.path === '/ranking' }">Ranking</a>
-                <a href="#/history" :class="{ active: $route.path === '/history' }">My Games</a>
+                <a href="#/history" :class="{ active: $route.path === '/history' }">History</a>
             </template>
 
             <div></div>
 
             <!-- User account management -->
             <template v-if="user">
-                <a href="#/sign-in?page=/update-password" :class="{ active: $route.path === '/update-password' }">Update Password</a>
+                <a href="#/sign-in?page=/update-password" :class="{ active: $route.path === '/update-password' }">Update
+                    Password</a>
                 <a href="#/update-profile" :class="{ active: $route.path === '/update-profile' }">Update Profile</a>
-                <a href="#/sign-in?page=/delete-account" :class="{ active: $route.path === '/delete-account' }">Delete Account</a>
+                <a href="#/sign-in?page=/delete-account" :class="{ active: $route.path === '/delete-account' }">Delete
+                    Account</a>
                 <a href="#" @click.prevent="signOut">Sign Out</a>
             </template>
             <!-- Authentication links -->
@@ -58,21 +65,22 @@
     </div>
 
     <!-- Add geometry & drawing library -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCBdwinhBxfD7cqHUCw9ja3vCwrUoSFsro&libraries=geometry,drawing"></script>
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCBdwinhBxfD7cqHUCw9ja3vCwrUoSFsro&libraries=geometry,drawing"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/11.1.0/firebase-app-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/11.1.0/firebase-firestore-compat.min.js"></script>    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/11.1.0/firebase-auth-compat.min.js"></script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/11.1.0/firebase-firestore-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/11.1.0/firebase-auth-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.global.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-router/4.5.0/vue-router.global.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.slim.min.js"></script>
     <script src="js/app.js"></script>
     <script>
         // Setup (Google Maps) ================================================
-        
+
         const gm = google.maps;
         const center = new gm.LatLng(3.215600, 101.728100); // [OR] { lat: 3.215600, lng: 101.728100 }
         let map = null;
-        
+
         // Setup (Firebase) ===================================================
 
         // Intialize firebase app
@@ -94,34 +102,81 @@
         const router = VueRouter.createRouter({
             history: VueRouter.createWebHashHistory(),
             routes: [
-                { path: '/home'           , component: load('home') },
-                { path: '/demo13'          , component: load('demo13') },
-                { path: '/ranking'     , component: load('ranking') },
-                { path: '/history'      , component: load('history') },
-                { path: '/register'       , component: load('register') },
-                { path: '/reset-password' , component: load('reset-password') },
-                { path: '/sign-in'        , component: load('sign-in') },
+                { path: '/home', component: load('home') },
+                { path: '/doraemon-game', component: load('doraemon-game') },
+                { path: '/ranking', component: load('ranking') },
+                { path: '/history', component: load('history') },
+                { path: '/register', component: load('register') },
+                { path: '/reset-password', component: load('reset-password') },
+                { path: '/sign-in', component: load('sign-in') },
                 { path: '/update-password', component: load('update-password') },
-                { path: '/update-profile' , component: load('update-profile') },
-                { path: '/delete-account' , component: load('delete-account') },
-                { path: '/:all(.*)'       , redirect: '/home' },
+                { path: '/update-profile', component: load('update-profile') },
+                { path: '/delete-account', component: load('delete-account') },
+                { path: '/:all(.*)', redirect: '/home' },
             ],
         });
+
+        // Add this navigation guard
+router.beforeEach((to, from, next) => {
+    // If navigating away from game page to any other page
+    if (from.path === '/doraemon-game' && to.path !== '/doraemon-game') {
+        // Stop game music
+        AUDIO_GAME_BG.pause();
+        isGameMusicPlaying = false;
+    }
+    
+    // If navigating to game page from any other page
+    if (to.path === '/doraemon-game' && from.path !== '/doraemon-game') {
+        // Stop home music if it's playing
+        AUDIO_HOME_BG.pause();
+    }
+    
+    next();
+});
 
         // Vue root component -------------------------------------------------
         const app = Vue.createApp({
             data: () => ({
                 title: 'Mini Games',
                 user: null,
+                isHomeMusicPlaying: false,
             }),
+
+            computed: {
+                isGamePage() {
+                    return this.$route && this.$route.path === '/doraemon-game';
+                }
+            },
 
             watch: {
                 title() {
                     document.title = 'Doraemon : ' + this.title;
                 },
+
+                '$route'(to, from) {
+            if (to.path === '/doraemon-game') {
+                // Going to game page, pause home music
+                AUDIO_HOME_BG.pause();
+            } else if (from && from.path === '/doraemon-game') {
+                // Coming from game page, resume home music if it was playing
+                if (this.isHomeMusicPlaying) {
+                    AUDIO_HOME_BG.play();
+                }
+            }
+        }
             },
 
             methods: {
+                toggleHomeMusic() {
+            if (this.isHomeMusicPlaying) {
+                AUDIO_HOME_BG.pause();
+                this.isHomeMusicPlaying = false;
+            } else {
+                AUDIO_HOME_BG.play();
+                this.isHomeMusicPlaying = true;
+            }
+        },
+
                 block() {
                     this.$refs.loader.showModal();
                 },
@@ -152,8 +207,8 @@
         });
 
         app.directive('focus', {
-            mounted(el) { 
-                el.focus(); 
+            mounted(el) {
+                el.focus();
             },
         });
 
@@ -162,4 +217,5 @@
         const root = app.mount('#app');
     </script>
 </body>
+
 </html>

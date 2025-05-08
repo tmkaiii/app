@@ -14,14 +14,25 @@
                    v-focus>
 
             <label>Photo</label>
-            <input type="file" 
-                   id="file" 
-                   accept="image/*"
-                   @change="change"
-                   ref="file">
+            <div class="photo-options">
+                <input type="file" 
+                       id="file" 
+                       accept="image/*"
+                       @change="change"
+                       ref="file">
+                
+                <button type="button" @click.prevent="toggleWebcam" class="webcam-btn">
+                    {{ webcamActive ? 'Close Camera' : 'Use Webcam' }}
+                </button>
+            </div>
+
+            <div v-if="webcamActive" class="webcam-container">
+                <video ref="video" class="webcam-video" autoplay playsinline></video>
+                <button type="button" @click.prevent="capturePhoto" class="capture-btn">Take Photo</button>
+            </div>
 
             <br>
-            <label for="file">
+            <label for="file" class="photo-label">
                 <img class="photo" :src="src">
             </label>
 
@@ -38,12 +49,13 @@
     app.component({
         data: () => ({ 
             name: '',
-            photo: null,            
+            photo: null,
+            webcamActive: false,
+            stream: null
         }),
 
         computed: {
             src() {
-                // TODO:
                 return this.photo || this.$root.user.photo;
             },
         },
@@ -67,45 +79,196 @@
                         el.setCustomValidity('Invalid photo.');
                     });
             },
+            
+            toggleWebcam() {
+                if (this.webcamActive) {
+                    this.stopWebcam();
+                } else {
+                    this.startWebcam();
+                }
+            },
+            
+            startWebcam() {
+                // Close any existing stream first
+                this.stopWebcam();
+                
+                // Request access to webcam
+                navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        facingMode: 'user'
+                    },
+                    audio: false
+                })
+                .then(stream => {
+                    this.stream = stream;
+                    this.webcamActive = true;
+                    
+                    // Wait for DOM update then set video source
+                    this.$nextTick(() => {
+                        const video = this.$refs.video;
+                        if (video) {
+                            video.srcObject = stream;
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error accessing webcam:', error);
+                    alert('Unable to access webcam. Please check your permissions.');
+                });
+            },
+            
+            stopWebcam() {
+                if (this.stream) {
+                    const tracks = this.stream.getTracks();
+                    tracks.forEach(track => track.stop());
+                    this.stream = null;
+                }
+                this.webcamActive = false;
+            },
+            
+            capturePhoto() {
+                if (!this.webcamActive || !this.$refs.video) return;
+                
+                const video = this.$refs.video;
+                
+                // Create a canvas element to capture the video frame
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                
+                // Draw the current video frame to the canvas
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // Convert canvas to blob and process like an uploaded file
+                canvas.toBlob(blob => {
+                    if (!blob) {
+                        alert('Failed to capture image from webcam.');
+                        return;
+                    }
+                    
+                    // Process the blob like a file upload
+                    crop(blob, 150, 150, 'dataURL', 'image/webp')
+                        .then(url => {
+                            this.photo = url;
+                            // Optionally close the webcam after capturing
+                            this.stopWebcam();
+                        })
+                        .catch(err => {
+                            console.error('Error processing webcam photo:', err);
+                            alert('Failed to process the photo.');
+                        });
+                }, 'image/jpeg', 0.95);
+            },
+            
             reset() {
-                // TODO:
-                this.name = this.$root.user.displayName;;
+                this.name = this.$root.user.displayName;
                 this.photo = null;
                 this.$refs.file.value = '';
+                this.stopWebcam(); // Make sure to stop webcam if it's active
                 this.$refs.name.focus();
             },
+            
             submit() { 
                 this.$root.block();
-
-                // TODO: ----------------------------------
                 
                 const user = this.$root.user;
-
-                user.updateProfile({ displayName: this.name });
-
+                const updates = {};
+                
+                // Create a batch of promises to update both Authentication profile and Firestore
+                const promises = [];
+                
+                // Always update the display name in Auth profile
+                promises.push(user.updateProfile({ displayName: this.name }));
+                
+                // Update Firestore document
+                updates.name = this.name;
+                
+                // Only update the photo if it has changed
                 if (this.photo) {
-                    USERS.doc(user.uid).update({ photo: this.photo });
+                    updates.photo = this.photo;
+                    // Update the user object locally
                     user.photo = this.photo;
                 }
-
-                // ----------------------------------------
-
-                this.$root.unblock();
-                this.$router.push('/');
+                
+                // Update the Firestore document
+                promises.push(USERS.doc(user.uid).update(updates));
+                
+                // Execute all promises
+                Promise.all(promises)
+                    .then(() => {
+                        this.$root.unblock();
+                        alert('Profile updated successfully');
+                        this.$router.push('/');
+                    })
+                    .catch(err => {
+                        this.$root.unblock();
+                        handleError(err);
+                    });
             },
         },
 
         created() {
-            // TODO:
             if (!this.$root.user) {
                 this.$router.push('/sign-in');
                 return;
             }
 
-            // TODO:
             this.name = this.$root.user.displayName;
-
             this.$root.title = 'Update Profile';
         },
+        
+        beforeUnmount() {
+            // Make sure to clean up webcam resources when component is destroyed
+            this.stopWebcam();
+        }
     });
 </script>
+
+<style>
+.photo-options {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.webcam-btn, .capture-btn {
+    padding: 5px 10px;
+    background-color: #4285f4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.webcam-container {
+    margin: 10px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.webcam-video {
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.photo-label {
+    cursor: pointer;
+    display: block;
+}
+
+.photo {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+}
+</style>

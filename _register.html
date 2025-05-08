@@ -2,39 +2,30 @@
     <main>
         <h1>Register</h1>
 
-        <!-- TODO -->
-        <form class="form" 
-              @submit.prevent="submit"
-              @input="$event.target.setCustomValidity('')">
+        <form class="form" @submit.prevent="submit" @input="$event.target.setCustomValidity('')">
 
             <label>Email</label>
-            <input v-model.trim="email"
-                   type="email"
-                   required
-                   maxlength="100"
-                   ref="email"
-                   v-focus>
+            <input v-model.trim="email" type="email" required maxlength="100" ref="email" v-focus>
 
             <label>Password</label>
-            <input v-model.trim="password"
-                   type="password"
-                   required
-                   maxlength="100"
-                   ref="password">
+            <input v-model.trim="password" type="password" required maxlength="100" ref="password">
 
             <label>Name</label>
-            <input v-model.trim="name"
-                   type="text"
-                   required
-                   maxlength="100">
+            <input v-model.trim="name" type="text" required maxlength="100">
 
             <label>Photo</label>
-            <input type="file" 
-                   id="file" 
-                   accept="image/*"
-                   required 
-                   @change="change"
-                   ref="file">
+            <div class="photo-options">
+                <input type="file" id="file" accept="image/*" :required="!photo" @change="change" ref="file">
+                <button type="button" @click.prevent="toggleWebcam" class="webcam-btn">
+                    {{ webcamActive ? 'Close Camera' : 'Use Webcam' }}
+                </button>
+            </div>
+
+            <!-- Webcam container -->
+            <div v-if="webcamActive" class="webcam-container">
+                <video ref="video" class="webcam-video" autoplay playsinline></video>
+                <button type="button" @click.prevent="capturePhoto" class="capture-btn">Take Photo</button>
+            </div>
 
             <br>
             <label for="file">
@@ -52,11 +43,13 @@
 
 <script>
     app.component({
-        data: () => ({ 
+        data: () => ({
             email: '',
             password: '',
             name: '',
             photo: null,
+            webcamActive: false,
+            stream: null
         }),
 
         computed: {
@@ -84,44 +77,200 @@
                         el.setCustomValidity('Invalid photo.');
                     });
             },
+            
+            // Toggle webcam on/off
+            toggleWebcam() {
+                if (this.webcamActive) {
+                    this.stopWebcam();
+                } else {
+                    this.startWebcam();
+                }
+            },
+            
+            // Start webcam
+            startWebcam() {
+                // Ensure any existing stream is stopped first
+                this.stopWebcam();
+                
+                // Request camera access
+                navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        facingMode: 'user' // Front camera
+                    },
+                    audio: false
+                })
+                .then(stream => {
+                    this.stream = stream;
+                    this.webcamActive = true;
+                    
+                    // Wait for DOM update then set video source
+                    this.$nextTick(() => {
+                        const video = this.$refs.video;
+                        if (video) {
+                            video.srcObject = stream;
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error accessing webcam:', error);
+                    alert('Unable to access webcam. Please check your permissions.');
+                });
+            },
+            
+            // Stop webcam
+            stopWebcam() {
+                if (this.stream) {
+                    const tracks = this.stream.getTracks();
+                    tracks.forEach(track => track.stop());
+                    this.stream = null;
+                }
+                this.webcamActive = false;
+            },
+            
+            // Capture photo from webcam
+            capturePhoto() {
+                if (!this.webcamActive || !this.$refs.video) return;
+                
+                const video = this.$refs.video;
+                
+                // Create canvas element to capture video frame
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                
+                // Draw the current video frame to canvas
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // Convert canvas to blob and process like an uploaded file
+                canvas.toBlob(blob => {
+                    if (!blob) {
+                        alert('Failed to capture image from webcam.');
+                        return;
+                    }
+                    
+                    // Process the blob like a file upload
+                    crop(blob, 150, 150, 'dataURL', 'image/webp')
+                        .then(url => {
+                            this.photo = url;
+                            // Close webcam after capturing
+                            this.stopWebcam();
+                        })
+                        .catch(err => {
+                            console.error('Error processing webcam photo:', err);
+                            alert('Failed to process the photo.');
+                        });
+                }, 'image/jpeg', 0.95);
+            },
+            
             reset() {
                 this.email = '';
                 this.password = '';
                 this.name = '';
                 this.photo = null;
                 this.$refs.file.value = '';
+                this.stopWebcam(); // Make sure to stop webcam if it's active
                 this.$refs.email.focus();
             },
+            
             submit() {
                 this.$root.block();
-                
-                // TODO: ----------------------------------
-                
+
                 AUTH.createUserWithEmailAndPassword(this.email, this.password)
                     .then(credential => {
 
-                        const user = this.$root.user;
+                        const user = credential.user;
 
-                        user.updateProfile({ displayName: this.name });
+                        // create user detail object
+                        const userData = {
+                            name: this.name,
+                            email: this.email,
+                            photo: this.photo || null,
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        };
 
-                        USERS.doc(user.uid).set({ photo: this.photo });
-                        user.photo = this.photo;
+                        // Update profile to firebase
+                        return Promise.all([
+                            user.updateProfile({ displayName: this.name }),
+                            firebase.firestore().collection('users').doc(user.uid).set(userData)
+                        ]);
+                    })
+                    .then(() => {
+                        // get latest user detail
+                        const user = firebase.auth().currentUser;
 
+                        // update root user detail
+                        this.$root.user = user;
+                        if (this.$root.user) {
+                            this.$root.user.photo = this.photo;
+                        }
+
+                        // register successful
                         this.$root.unblock();
                         this.$router.push('/');
-                        
                     })
-                    .catch(err => {
+                    .catch(error => {
                         this.$root.unblock();
-                        handleError(err, this.$refs.email, this.$refs.password);
+                        handleError(error, this.$refs.email, this.$refs.password);
                     });
-
-                // ----------------------------------------
-            },
+            }
         },
 
         created() {
             this.$root.title = 'Register';
         },
+        
+        beforeUnmount() {
+            // Ensure webcam is closed when component is unmounted
+            this.stopWebcam();
+        }
     });
 </script>
+
+<style>
+/* Webcam related styles */
+.photo-options {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.webcam-btn, .capture-btn {
+    padding: 5px 10px;
+    background-color: #4285f4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.webcam-btn:hover, .capture-btn:hover {
+    background-color: #3367d6;
+}
+
+.webcam-container {
+    margin: 10px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.webcam-video {
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.photo {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+}
+</style>

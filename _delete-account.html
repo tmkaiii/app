@@ -14,32 +14,35 @@
 <script>
     app.component({
         data: () => ({
-            
+
         }),
 
         methods: {
             submit() {
                 this.$root.block();
 
-                // TODO: ----------------------------------
-                
                 const user = this.$root.user;
 
-                user.delete()
-                    .then(_ => {
-
-                        USERS.doc(user.uid).delete();
-
+                // First delete the user document from Firestore
+                USERS.doc(user.uid).delete()
+                    .then(() => {
+                        // Then delete the user authentication
+                        return user.delete();
+                    })
+                    .then(() => {
+                        this.$root.user = null; // Clear the user data in the app
                         this.$root.unblock();
                         this.$router.push('/');
-
                     })
                     .catch(err => {
                         this.$root.unblock();
-                        handleError(err, this.$refs.email, this.$refs.password);
+                        handleError(err);
+                        // If delete fails due to credential timeout, redirect to sign in
+                        if (err.code === 'auth/requires-recent-login') {
+                            alert('Please sign in again to delete your account');
+                            this.$router.push('/sign-in');
+                        }
                     });
-
-                // ----------------------------------------
             },
         },
 

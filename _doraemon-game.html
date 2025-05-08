@@ -1,0 +1,1210 @@
+﻿<style>
+    :root {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        grid-template-rows: 1fr;
+        font-family: 'Nunito', sans-serif;
+        overflow: hidden;
+    }
+
+    main#game-container {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        grid-template-rows: 1fr;
+        height: 100%;
+    }
+
+    #sidebar {
+        background-color: var(--doraemon-lighter-blue);
+        padding: 15px;
+        border-right: 3px solid var(--doraemon-blue);
+        overflow-y: auto;
+    }
+
+    #map-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    #map {
+        width: 100%;
+        height: 100%;
+        border: 1px solid #333;
+    }
+
+    .game-title {
+        color: var(--doraemon-dark-blue);
+        font-size: 22px;
+        margin-bottom: 15px;
+        text-align: center;
+        border-bottom: 2px solid var(--doraemon-blue);
+        padding-bottom: 10px;
+    }
+
+    .timer-display {
+        background-color: white;
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .timer-display .time {
+        font-size: 24px;
+        font-weight: bold;
+        color: var(--doraemon-dark-blue);
+    }
+
+    .mission-panel {
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .mission-title {
+        color: var(--doraemon-dark-blue);
+        font-weight: bold;
+        margin-bottom: 10px;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+    }
+
+    .mission-title img {
+        width: 24px;
+        height: 24px;
+        margin-right: 8px;
+    }
+
+    .gadget-list {
+        margin-top: 15px;
+    }
+
+    .gadget-item {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        margin-bottom: 8px;
+        background-color: var(--doraemon-lighter-blue);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .gadget-item.collected {
+        background-color: #d7f8d7;
+        border-left: 4px solid #4CAF50;
+    }
+
+    .gadget-item img {
+        width: 32px;
+        height: 32px;
+        margin-right: 10px;
+        border-radius: 5px;
+    }
+
+    .gadget-info {
+        flex: 1;
+    }
+
+    .gadget-name {
+        font-weight: bold;
+        margin-bottom: 3px;
+    }
+
+    .gadget-distance {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .gadget-panel {
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .gadget-title {
+        color: var(--doraemon-dark-blue);
+        font-weight: bold;
+        margin-bottom: 10px;
+        font-size: 18px;
+    }
+
+    .friend-list {
+        margin-top: 15px;
+    }
+
+    .friend-item {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        margin-bottom: 8px;
+        background-color: var(--doraemon-lighter-blue);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .friend-item.helped {
+        background-color: #d7f8d7;
+        border-left: 4px solid #4CAF50;
+    }
+
+    .friend-item img {
+        width: 32px;
+        height: 32px;
+        margin-right: 10px;
+        border-radius: 5px;
+    }
+
+    .friend-info {
+        flex: 1;
+    }
+
+    .friend-name {
+        font-weight: bold;
+        margin-bottom: 3px;
+    }
+
+    .friend-need {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .stats-panel {
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-title {
+        color: var(--doraemon-dark-blue);
+        font-weight: bold;
+        margin-bottom: 10px;
+        font-size: 18px;
+    }
+
+    .stats-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+    }
+
+    .stats-label {
+        font-weight: bold;
+    }
+
+    .difficulty-selector {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    .difficulty-btn {
+        flex: 1;
+        padding: 8px;
+        margin: 0 5px;
+        border: none;
+        border-radius: 5px;
+        background-color: var(--doraemon-light-blue);
+        color: var(--doraemon-dark-blue);
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .difficulty-btn:hover {
+        background-color: var(--doraemon-blue);
+        color: white;
+    }
+
+    .difficulty-btn.active {
+        background-color: var(--doraemon-dark-blue);
+        color: white;
+    }
+
+    #info {
+        font-size: 16px;
+        font-family: 'Nunito', sans-serif;
+        font-weight: normal;
+        padding: 10px;
+    }
+
+    #game-over-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .game-over-panel {
+        background-color: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        max-width: 400px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .game-over-title {
+        font-size: 24px;
+        color: var(--doraemon-dark-blue);
+        margin-bottom: 15px;
+    }
+
+    .game-over-score {
+        font-size: 36px;
+        color: var(--doraemon-blue);
+        margin-bottom: 20px;
+    }
+
+    .game-over-stats {
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .game-over-btn {
+        padding: 10px 20px;
+        margin: 0 10px;
+        border: none;
+        border-radius: 20px;
+        background-color: var(--doraemon-blue);
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .game-over-btn:hover {
+        background-color: var(--doraemon-dark-blue);
+        transform: translateY(-2px);
+    }
+
+    /* Dialog styles */
+    dialog {
+        border: none;
+        border-radius: 15px;
+        padding: 25px;
+        background-color: white;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        width: 400px;
+        z-index: 1100;
+    }
+
+    dialog::backdrop {
+        background: rgba(99, 170, 199, 0.233);
+        backdrop-filter: blur(3px);
+    }
+
+    .dialog-content {
+        text-align: center;
+    }
+
+    .dialog-title {
+        color: var(--doraemon-dark-blue);
+        margin-top: 0;
+        font-size: 24px;
+    }
+
+    .dialog-text {
+        margin-bottom: 20px;
+        color: #555;
+    }
+
+    .dialog-options {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .dialog-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .dialog-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    .dialog-btn-primary {
+        background-color: var(--doraemon-blue);
+        color: white;
+    }
+
+    .dialog-btn-primary:hover {
+        background-color: var(--doraemon-dark-blue);
+        transform: translateY(-2px);
+    }
+
+    .dialog-btn:not(.dialog-btn-primary) {
+        background-color: #f0f0f0;
+        color: #555;
+    }
+
+    .dialog-btn:not(.dialog-btn-primary):hover {
+        background-color: #e0e0e0;
+        transform: translateY(-2px);
+    }
+
+    .quit-btn {
+        width: 100%;
+        padding: 10px;
+        margin-top: 15px;
+        border: none;
+        border-radius: 5px;
+        background-color: #ff5252;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .quit-btn:hover {
+        background-color: #ff1744;
+        transform: translateY(-2px);
+    }
+
+    .music-btn,
+    .home-music-btn {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        background-color: #1e77a0;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .music-btn {
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    .home-music-btn {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+    }
+
+    .music-btn:hover,
+    .home-music-btn:hover {
+        background-color: #0f597b;
+        transform: translateY(-2px);
+    }
+</style>
+
+<template>
+    <main id="game-container">
+        <!-- Sidebar with game info -->
+        <div id="sidebar">
+            <h2 class="game-title">Doraemon Hero Mission</h2>
+
+            <!-- Timer display -->
+            <div class="timer-display" v-if="gameStarted">
+                <div>Time Elapsed</div>
+                <div class="time">{{ formatTime(elapsedTime) }}</div>
+            </div>
+
+            <!-- Mission panel -->
+            <div class="mission-panel" v-if="gameStarted">
+                <div class="mission-title">
+                    <img src="image/c/doraemon.gif" alt="Mission">
+                    Mission: {{ friends.filter(f => f.helped).length }}/{{ friends.length }} Friends Helped
+                </div>
+
+                <div class="friend-list">
+                    <div v-for="friend in friends" :key="friend.id" class="friend-item"
+                        :class="{ 'helped': friend.helped }">
+                        <img :src="friend.icon" :alt="friend.name">
+                        <div class="friend-info">
+                            <div class="friend-name">{{ friend.name }}</div>
+                            <div class="friend-need" v-if="!friend.helped">
+                                Needs: {{ friend.needsGadget }}
+                            </div>
+                            <div class="friend-need" v-else>
+                                Helped ✓
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <!-- Friends panel -->
+            <div class="gadget-panel" v-if="gameStarted">
+                <div class="gadget-title">
+                    Lost Gadgets
+                </div>
+
+                <div class="gadget-list">
+                    <div v-for="gadget in gadgets" :key="gadget.id" class="gadget-item"
+                        :class="{ 'collected': gadget.collected }">
+                        <img :src="gadget.icon" :alt="gadget.name">
+                        <div class="gadget-info">
+                            <div class="gadget-name">{{ gadget.name }}</div>
+                            <div class="gadget-distance" v-if="!gadget.collected">
+                                {{ Math.round(gadget.distance) }} meters away
+                            </div>
+                            <div class="gadget-distance" v-else>
+                                Collected ✓
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats panel -->
+            <div class="stats-panel" v-if="gameStarted">
+                <div class="stats-title">Game Stats</div>
+                <div class="stats-item">
+                    <div class="stats-label">Steps:</div>
+                    <div>{{ steps }}</div>
+                </div>
+                <div class="stats-item">
+                    <div class="stats-label">Difficulty:</div>
+                    <div>{{ difficulty.charAt(0).toUpperCase() + difficulty.slice(1) }}</div>
+                </div>
+                <button class="music-btn" @click="toggleGameMusic">
+                    {{ isGameMusicPlaying ? '🔊' : '🔇' }}
+                </button>
+                <button class="quit-btn" @click="confirmQuit">Quit Game</button>
+            </div>
+        </div>
+
+        <!-- Map container -->
+        <div id="map-container">
+            <div id="map"></div>
+
+            <!-- Game over overlay -->
+            <div id="game-over-overlay" v-if="gameOver">
+                <div class="game-over-panel">
+                    <div class="game-over-title">Mission Complete!</div>
+                    <div class="game-over-score">Grade: {{ gameScore }}</div>
+                    <div class="game-over-stats">
+                        <p><strong>Time:</strong> {{ formatTime(elapsedTime) }}</p>
+                        <p><strong>Steps:</strong> {{ steps }}</p>
+                        <p><strong>Difficulty:</strong> {{ difficulty.charAt(0).toUpperCase() + difficulty.slice(1) }}
+                        </p>
+                    </div>
+                    <button class="game-over-btn" @click="playAgain">Play Again</button>
+                    <button class="game-over-btn" @click="goHome">Return Home</button>
+                </div>
+            </div>
+        </div>
+        <!-- Difficulty selection dialog -->
+        <dialog id="difficulty-dialog" ref="difficultyDialog">
+            <div class="dialog-content">
+                <h2 class="dialog-title">Select Difficulty</h2>
+                <p class="dialog-text">Choose a difficulty level to begin your adventure!</p>
+
+                <div class="dialog-options">
+                    <button class="difficulty-btn" :class="{ active: difficulty === 'easy' }"
+                        @click="setDifficulty('easy')">Easy</button>
+                    <button class="difficulty-btn" :class="{ active: difficulty === 'medium' }"
+                        @click="setDifficulty('medium')">Medium</button>
+                    <button class="difficulty-btn" :class="{ active: difficulty === 'hard' }"
+                        @click="setDifficulty('hard')">Hard</button>
+                </div>
+
+                <div class="dialog-buttons">
+                    <button class="dialog-btn dialog-btn-primary" @click="startGame">Start Game</button>
+                    <button class="dialog-btn" @click="cancelGame">Cancel</button>
+                </div>
+            </div>
+        </dialog>
+
+        <!-- Quit confirmation dialog -->
+        <dialog id="quit-dialog" ref="quitDialog">
+            <div class="dialog-content">
+                <h2 class="dialog-title">Quit Game?</h2>
+                <p class="dialog-text">Are you sure you want to quit? Your progress will be lost.</p>
+
+                <div class="dialog-buttons">
+                    <button class="dialog-btn dialog-btn-primary" @click="quitGame">Yes, Quit</button>
+                    <button class="dialog-btn" @click="continueGame">No, Continue</button>
+                </div>
+            </div>
+        </dialog>
+
+        <!-- Game over dialog for quitting -->
+        <dialog id="game-lost-dialog" ref="gameLostDialog">
+            <div class="dialog-content">
+                <h2 class="dialog-title">Game Over!</h2>
+                <p class="dialog-text">You've quit the game. Better luck next time!</p>
+
+                <div class="dialog-buttons">
+                    <button class="dialog-btn dialog-btn-primary" @click="goHome">Return Home</button>
+                    <button class="dialog-btn" @click="playAgain">Try Again</button>
+                </div>
+            </div>
+        </dialog>
+    </main>
+</template>
+
+<script>
+    // Game constants based on difficulty
+    const DIFFICULTY_SETTINGS = {
+        easy: {
+            distance: 800,
+            movement: 5,
+            gadgets: 10,
+            friends: 3,
+            scoreThresholds: {
+                A: 50,
+                B: 80,
+                C: 110
+            }
+        },
+        medium: {
+            distance: 1000,
+            movement: 5,
+            gadgets: 10,
+            friends: 4,
+            scoreThresholds: {
+                A: 60,
+                B: 90,
+                C: 120
+            }
+        },
+        hard: {
+            distance: 1300,
+            movement: 5,
+            gadgets: 10,
+            friends: 5,
+            scoreThresholds: {
+                A: 70,
+                B: 100,
+                C: 130
+            }
+        }
+    };
+
+    // Audio files
+    const AUDIO_BOUNDARY = new Audio('audio/1.mp3');
+    const AUDIO_COLLECT_GADGET = new Audio('audio/2.1.mp3');
+    const AUDIO_HELP_FRIEND = new Audio('audio/2.2.mp3');
+    // const AUDIO_COLLECT = new Audio('audio/2.mp3');
+    const AUDIO_COMPLETE = new Audio('audio/3.1.mp3');
+
+    // Gadget data
+    const GADGET_DATA = [
+        { id: 'angel', name: 'Angel', icon: 'image/d/zhiyintianshi.png' },
+        { id: 'smalllight', name: 'Small Light', icon: 'image/d/suoxiaodeng.png' },
+        { id: 'timemachine', name: 'Time Machine', icon: 'image/d/shiguangji.png' },
+        { id: 'anywheredoor', name: 'Anywhere Door', icon: 'image/d/renyimen.png' },
+        { id: 'aircannon', name: 'Air Cannon', icon: 'image/d/kongqipao.png' },
+        { id: 'biglight', name: 'Big Light', icon: 'image/d/fangdadeng.png' },
+        { id: 'memorybread', name: 'Memory Bread', icon: 'image/d/jiyimianbao.png' },
+        { id: 'phonebooth', name: 'What-If Phone Booth', icon: 'image/d/ruguodianhuating.png' },
+        { id: 'hopter', name: 'Hopter', icon: 'image/d/zhuqingting.png' },
+    ];
+
+    // Friend data
+    const FRIEND_DATA = [
+        { id: 'nobita', name: 'Nobita', icon: 'image/c/nobita.gif' },
+        { id: 'shizuka', name: 'Shizuka', icon: 'image/c/shizuka.png' },
+        { id: 'dorami', name: 'Dorami', icon: 'image/c/dorami.gif' },
+        { id: 'giant', name: 'Giant', icon: 'image/c/panghu.png' },
+        { id: 'suneo', name: 'Suneo', icon: 'image/c/xiaofu.png' }
+    ];
+
+    app.component({
+        data: () => ({
+            // Game state
+            gameStarted: false,
+            gameOver: false,
+            difficulty: 'medium',
+            player: null,
+            bounds: null,
+            map: null,
+
+            // Game stats
+            steps: 0,
+            startTime: null,
+            elapsedTime: 0,
+            timer: null,
+            gameScore: '',
+
+            // Game elements
+            gadgets: [],
+            friends: [],
+            collectedGadgets: [],
+
+            // Add Doraemon image paths
+            doraemonRightImg: 'image/c/doraemon-right.gif',
+            doraemonLeftImg: 'image/c/doraemon-left.gif',
+            currentDoraemonImg: 'image/c/doraemon-right.gif',
+
+            isGameMusicPlaying: false,
+        }),
+
+        computed: {
+            settings() {
+                return DIFFICULTY_SETTINGS[this.difficulty];
+            },
+
+            isGameMusicPlaying() {
+                return !AUDIO_GAME_BG.paused;
+            },
+        },
+
+        methods: {
+            toggleGameMusic() {
+            // Use the global function but update local state
+            this.isGameMusicPlaying = toggleGameMusic();
+        },
+            // Format time in MM:SS
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            },
+
+            // Set game difficulty
+            setDifficulty(level) {
+                this.difficulty = level;
+            },
+
+            cancelGame() {
+                this.$refs.difficultyDialog.close();
+                this.$router.push('/home');
+            },
+
+            startGame() {
+                // Close the dialog
+                this.$refs.difficultyDialog.close();
+
+                this.gameStarted = true;
+                this.gameOver = false;
+                this.steps = 0;
+                this.collectedGadgets = [];
+                this.startTime = Date.now();
+
+                AUDIO_HOME_BG.pause();
+
+                AUDIO_GAME_BG.play();
+                this.isGameMusicPlaying = true;
+
+                // Start timer
+                this.timer = setInterval(() => {
+                    this.elapsedTime = Math.floor((Date.now() - this.startTime) / 1000);
+                }, 1000);
+
+                // Initialize map with current difficulty
+                this.initializeMap();
+            },
+
+            // Initialize Google Map
+            initializeMap() {
+                const settings = this.settings;
+
+                // Calculate bounds based on difficulty
+                const computeBounds = (center, distance) => {
+                    const sw = gm.geometry.spherical.computeOffset(center, distance, 225);
+                    const ne = gm.geometry.spherical.computeOffset(center, distance, 45);
+                    return new gm.LatLngBounds(sw, ne);
+                };
+
+                // Create map
+                this.map = new gm.Map($('#map')[0], {
+                    center,
+                    zoom: 18,
+                    disableDefaultUI: true,
+                    clickableIcons: false,
+                    fullscreenControl: true,
+                    keyboardShortcuts: false,
+                    gestureHandling: 'none',
+                    restriction: {
+                        latLngBounds: computeBounds(center, settings.distance + 40),
+                        strictBounds: true,
+                    },
+                    maxZoom: 18,
+                    minZoom: 18,
+                });
+
+                // Create player marker
+                this.player = new gm.Marker({
+                    position: center,
+                    map: this.map,
+                    icon: 'image/c/doraemon.gif',
+                    animation: gm.Animation.DROP,
+                });
+
+                // This ensures everything is synchronized with the difficulty level
+                this.bounds = computeBounds(center, settings.distance);
+
+                // Draw boundary rectangle using the same bounds used for collision
+                const rect = new gm.Rectangle({
+                    map: this.map,
+                    bounds: this.bounds, // Use the SAME bounds object for visual and collision
+                    strokeColor: 'blue',
+                    strokeWeight: 5,
+                    fillOpacity: 0,
+                    clickable: false,
+                });
+
+                // Wait for map to load
+                gm.event.addListenerOnce(this.map, 'bounds_changed', () => {
+                    // Spawn gadgets
+                    this.spawnGadgets();
+
+                    // Spawn friends
+                    this.spawnFriends();
+
+                    // Calculate initial distances
+                    this.updateDistances();
+                });
+
+                // Set up event handlers
+                $(document).keydown(e => {
+                    if (this.gameOver) return;
+
+                    switch (e.key) {
+                        case 'ArrowUp': this.move(0); break;
+                        case 'ArrowRight': this.move(90); break;
+                        case 'ArrowDown': this.move(180); break;
+                        case 'ArrowLeft': this.move(270); break;
+                    }
+                });
+            },
+
+            // Spawn gadgets on the map
+            spawnGadgets() {
+                this.gadgets = [];
+                const sw = this.bounds.getSouthWest();
+                const sp = this.bounds.toSpan();
+                const info = new gm.InfoWindow({ headerDisabled: true });
+                let timeout = null;
+
+                // Create gadget data for ALL gadgets, not limited by difficulty
+                for (let i = 0; i < GADGET_DATA.length; i++) {
+                    const gadgetData = GADGET_DATA[i];
+                    const position = new gm.LatLng(
+                        sw.lat() + sp.lat() * Math.random(),
+                        sw.lng() + sp.lng() * Math.random()
+                    );
+
+                    // Create marker
+                    const marker = new gm.Marker({
+                        map: this.map,
+                        position,
+                        icon: gadgetData.icon,
+                        animation: gm.Animation.DROP,
+                    });
+
+                    // Add click listener
+                    marker.addListener('click', () => {
+                        const distance = gm.geometry.spherical.computeDistanceBetween(
+                            this.player.position, marker.position
+                        );
+
+                        info.setContent(`
+                <div id="info">
+                    This is the <b>${gadgetData.name}</b>.<br>
+                    It is <b>${Math.round(distance)}</b> meters away.
+                </div>
+            `);
+                        info.open(this.map, marker);
+
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => info.close(), 3000);
+                    });
+
+                    // Add to gadgets array
+                    this.gadgets.push({
+                        ...gadgetData,
+                        position,
+                        marker,
+                        distance: 0,
+                        collected: false
+                    });
+                }
+            },
+
+            // Spawn friends on the map
+            spawnFriends() {
+                this.friends = [];
+                const sw = this.bounds.getSouthWest();
+                const sp = this.bounds.toSpan();
+                const info = new gm.InfoWindow({ headerDisabled: true });
+                let timeout = null;
+
+                // Create a copy of gadget IDs to randomly assign to friends
+                const availableGadgetIds = GADGET_DATA.map(gadget => gadget.id);
+
+                // Shuffle the gadget IDs randomly
+                const shuffledGadgetIds = [...availableGadgetIds].sort(() => Math.random() - 0.5);
+
+                // Create friend data
+                for (let i = 0; i < this.settings.friends; i++) {
+                    const friendData = FRIEND_DATA[i];
+                    const position = new gm.LatLng(
+                        sw.lat() + sp.lat() * Math.random(),
+                        sw.lng() + sp.lng() * Math.random()
+                    );
+
+                    // Assign a random gadget ID to this friend
+                    const randomGadgetId = shuffledGadgetIds[i % shuffledGadgetIds.length];
+
+                    // Get the gadget this friend needs
+                    const neededGadget = GADGET_DATA.find(g => g.id === randomGadgetId);
+
+                    // Create marker
+                    const marker = new gm.Marker({
+                        map: this.map,
+                        position,
+                        icon: friendData.icon,
+                        animation: gm.Animation.DROP,
+                    });
+
+                    // Add click listener
+                    marker.addListener('click', () => {
+                        const distance = gm.geometry.spherical.computeDistanceBetween(
+                            this.player.position, marker.position
+                        );
+
+                        // Check if player has the needed gadget
+                        const hasGadget = this.collectedGadgets.some(g => g.id === randomGadgetId);
+                        const friend = this.friends.find(f => f.id === friendData.id);
+
+                        if (hasGadget && !friend.helped && distance < 20) {
+                            // Player has the gadget and is close enough
+                            friend.helped = true;
+                            info.setContent(`
+                    <div id="info">
+                        <b>${friendData.name}</b> says: "Thank you for the ${neededGadget.name}!"<br>
+                        You've helped them solve their problem!
+                    </div>
+                `);
+
+                            // Check if all friends are helped
+                            if (this.friends.every(f => f.helped)) {
+                                this.endGame();
+                            }
+                        } else if (!hasGadget && !friend.helped) {
+                            // Player doesn't have the needed gadget
+                            info.setContent(`
+                    <div id="info">
+                        <b>${friendData.name}</b> says: "I need the ${neededGadget.name} to solve my problem!"<br>
+                        Can you find it for me?
+                    </div>
+                `);
+                        } else if (friend.helped) {
+                            // Friend already helped
+                            info.setContent(`
+                    <div id="info">
+                        <b>${friendData.name}</b> says: "Thanks for your help!"
+                    </div>
+                `);
+                        }
+
+                        info.open(this.map, marker);
+
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => info.close(), 3000);
+                    });
+
+                    // Add to friends array
+                    this.friends.push({
+                        ...friendData,
+                        position,
+                        marker,
+                        distance: 0,
+                        helped: false,
+                        needsGadgetId: randomGadgetId,
+                        needsGadget: neededGadget.name
+                    });
+                }
+            },
+
+            // Move player in a direction
+            move(heading) {
+                if (!this.gameStarted || this.gameOver) return;
+
+                this.steps++;
+                let p = this.player.position;
+
+                // Update Doraemon image based on direction
+                if (heading === 90) { // Right
+                    this.currentDoraemonImg = this.doraemonRightImg;
+                    this.player.setIcon(this.doraemonRightImg);
+                } else if (heading === 270) { // Left
+                    this.currentDoraemonImg = this.doraemonLeftImg;
+                    this.player.setIcon(this.doraemonLeftImg);
+                }
+
+                p = gm.geometry.spherical.computeOffset(p, this.settings.movement, heading);
+
+                if (this.bounds.contains(p)) {
+                    this.player.setPosition(p);
+                    this.map.setCenter(p);
+                } else {
+                    AUDIO_BOUNDARY.play();
+                }
+
+                // Update distances
+                this.updateDistances();
+
+                // Check for gadget collection
+                this.checkGadgetCollection();
+
+                // NEW: Automatically help friends if close enough and have the right gadget
+                for (const friend of this.friends) {
+                    if (!friend.helped && friend.distance < 20) {
+                        // Check if Doraemon has the needed gadget
+                        const hasNeededGadget = this.collectedGadgets.some(g => g.id === friend.needsGadgetId);
+
+                        if (hasNeededGadget) {
+                            friend.helped = true;
+                            AUDIO_HELP_FRIEND.play();
+
+                            // Get the needed gadget name
+                            const neededGadget = GADGET_DATA.find(g => g.id === friend.needsGadgetId);
+
+                            // Optional: Show info window to indicate the friend was helped
+                            const info = new gm.InfoWindow({ headerDisabled: true });
+                            info.setContent(`
+                <div id="info">
+                    <b>${friend.name}</b> says: "Thank you for the ${neededGadget.name}!"<br>
+                    You've helped them solve their problem!
+                </div>
+            `);
+                            info.open(this.map, friend.marker);
+
+                            // Close info window after 3 seconds
+                            setTimeout(() => info.close(), 3000);
+
+                            // Check if all friends are helped
+                            if (this.friends.every(f => f.helped)) {
+                                this.endGame();
+                            }
+
+                            // Breaking after helping one friend per move to prevent multiple sounds
+                            break;
+                        }
+                    }
+                }
+            },
+
+            // Update distances to gadgets and friends
+            updateDistances() {
+                const playerPos = this.player.position;
+
+                // Update gadget distances
+                for (const gadget of this.gadgets) {
+                    if (!gadget.collected) {
+                        gadget.distance = gm.geometry.spherical.computeDistanceBetween(
+                            playerPos, gadget.position
+                        );
+                    }
+                }
+
+                // Update friend distances
+                for (const friend of this.friends) {
+                    friend.distance = gm.geometry.spherical.computeDistanceBetween(
+                        playerPos, friend.position
+                    );
+                }
+            },
+
+            // Check if player collected any gadgets
+            checkGadgetCollection() {
+                const playerPos = this.player.position;
+
+                for (const gadget of this.gadgets) {
+                    if (!gadget.collected && gadget.distance < 15) {
+                        AUDIO_COLLECT_GADGET.play();
+                        gadget.collected = true;
+                        gadget.marker.setVisible(false);
+                        this.collectedGadgets.push(gadget);
+
+                        // Check if this gadget can help any friend
+                        this.checkFriendHelp(gadget);
+                    }
+                }
+            },
+
+            // Check if a collected gadget can help any friend
+            checkFriendHelp(gadget) {
+                for (const friend of this.friends) {
+                    if (!friend.helped && friend.needsGadgetId === gadget.id && friend.distance < 20) {
+                        friend.helped = true;
+
+                        // Play sound effect
+                        AUDIO_HELP_FRIEND.play();
+
+                        // This line was missing - Hide the friend marker when helped
+                        // friend.marker.setVisible(false); 
+
+                        // Check if all friends are helped
+                        if (this.friends.every(f => f.helped)) {
+                            this.endGame();
+                        }
+                    }
+                }
+            },
+
+            // End the game
+            endGame() {
+                AUDIO_COMPLETE.play();
+                clearInterval(this.timer);
+
+                // Calculate score based on time and difficulty
+                const time = this.elapsedTime;
+                const thresholds = this.settings.scoreThresholds;
+
+                AUDIO_GAME_BG.pause();
+                this.isGameMusicPlaying = false;
+
+                if (time <= thresholds.A) {
+                    this.gameScore = 'A';
+                } else if (time <= thresholds.B) {
+                    this.gameScore = 'B';
+                } else if (time <= thresholds.C) {
+                    this.gameScore = 'C';
+                } else {
+                    this.gameScore = 'F';
+                }
+
+                // Save game result to Firestore
+                this.saveGameResult();
+
+                // For debugging, check the overlay element
+                console.log("Game over triggered - checking overlay element...");
+                const overlay = document.getElementById('game-over-overlay');
+                console.log("Overlay found:", !!overlay);
+                if (overlay) {
+                    console.log("Current display style:", window.getComputedStyle(overlay).display);
+                }
+
+                // Show game over screen
+                setTimeout(() => {
+                    this.gameOver = true;
+                    console.log("Game over flag set to true");
+
+                    // Force the overlay to be visible after a brief delay
+                    setTimeout(() => {
+                        const overlay = document.getElementById('game-over-overlay');
+                        if (overlay) {
+                            overlay.style.display = 'flex';
+                            console.log("Forced overlay display to flex");
+                        } else {
+                            console.error("Overlay element not found after setting gameOver flag!");
+                        }
+                    }, 100);
+                }, 1000);
+            },
+
+            // Save game result to Firestore
+            saveGameResult() {
+                if (!this.$root.user) return;
+
+                const result = {
+                    userId: this.$root.user.uid,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    difficulty: this.difficulty,
+                    time: this.elapsedTime,
+                    steps: this.steps,
+                    score: this.gameScore,
+                    gadgetsCollected: this.collectedGadgets.length,
+                    friendsHelped: this.friends.filter(f => f.helped).length
+                };
+
+                // Add to Firestore
+                DB.collection('game_results').add(result);
+            },
+
+            // Play again
+            playAgain() {
+                if (this.$refs.gameLostDialog) {
+                    this.$refs.gameLostDialog.close();
+                }
+
+                // Clean up
+                $(document).off('keydown');
+                this.map = null;
+                clearInterval(this.timer);
+
+                // Reset game
+                this.gameStarted = false;
+                this.gameOver = false;
+                this.startTime = null;
+                this.elapsedTime = 0;
+
+                // Start a new game
+                this.$nextTick(() => {
+                    this.startGame();
+                });
+            },
+
+            // Go back to home page
+            goHome() {
+                // Stop game music
+                AUDIO_GAME_BG.pause();
+                this.isGameMusicPlaying = false;
+
+                if (this.$refs.gameLostDialog) {
+                    this.$refs.gameLostDialog.close();
+                }
+                // Clean up
+                $(document).off('keydown');
+                this.map = null;
+                clearInterval(this.timer);
+
+                // Navigate to home
+                this.$router.push('/home');
+            },
+
+            // Add these methods to your methods object
+            confirmQuit() {
+                // Show the confirmation dialog
+                this.$refs.quitDialog.showModal();
+            },
+
+            continueGame() {
+                // Close the confirmation dialog and continue playing
+                this.$refs.quitDialog.close();
+            },
+
+            quitGame() {
+                // Close the confirmation dialog
+                this.$refs.quitDialog.close();
+
+                // Stop the game
+                clearInterval(this.timer);
+
+                // Show the game lost dialog
+                this.$refs.gameLostDialog.showModal();
+            }
+        },
+
+        mounted() {
+            // Show difficulty selection dialog
+            this.$nextTick(() => {
+                this.$refs.difficultyDialog.showModal();
+            });
+        },
+    });
+</script>

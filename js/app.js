@@ -1,3 +1,24 @@
+
+const AUDIO_GAME_BG = new Audio('audio/game-bg.mp3');
+AUDIO_GAME_BG.loop = true;
+
+const AUDIO_HOME_BG = new Audio('audio/home-bg.mp3');
+AUDIO_HOME_BG.loop = true;
+
+function isGameMusicPlaying() {
+    return !AUDIO_GAME_BG.paused;
+}
+
+function toggleGameMusic() {
+    if (AUDIO_GAME_BG.paused) {
+        AUDIO_GAME_BG.play()
+            .catch(err => console.error("Error playing audio:", err));
+        return true;
+    } else {
+        AUDIO_GAME_BG.pause();
+        return false;
+    }
+}
 // PURPOSE: Handle Firebase Authentication errors
 
 function handleError(err, email, password) {
