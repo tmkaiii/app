@@ -64,9 +64,17 @@
             googleSignIn() {
                 this.$root.block();
 
+                // Create Google Provider
+                const provider = new firebase.auth.GoogleAuthProvider();
+
+                // Force Google Account Chooser to appear every time
+                provider.setCustomParameters({
+                    prompt: 'select_account'
+                });
+
                 const page = this.$route.query.page;
 
-                AUTH.signInWithPopup(this.provider)
+                AUTH.signInWithPopup(provider) 
                     .then(result => {
                         const user = result.user;
                         // write user data to Firestore
